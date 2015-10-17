@@ -25,7 +25,7 @@ import com.gcit.jdbc.service.AdministratorService;
 public class HomeController {
 	
 	@Autowired
-	private AdministratorService adminService;
+	AdministratorService adminService;
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(HomeController.class);
@@ -50,6 +50,7 @@ public class HomeController {
 	@RequestMapping(value = "/addAuthor", method = RequestMethod.POST, consumes = "application/json")
 	public @ResponseBody String addAuthor(@RequestBody Author author,
 			Locale locale, Model model) {
+		System.out.println("here");
 		try {
 			adminService.addAuthor(author);
 			return "Author added succesfully";
