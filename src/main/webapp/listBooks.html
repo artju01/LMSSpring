@@ -1,0 +1,62 @@
+<section data-ng-controller="listBooksCtrl">
+<div class="modal-header">
+	<button type="button" class="close" data-dismiss="modal"
+		aria-hidden="true">&times;</button>
+	<h4 class="modal-title">Books</h4>
+</div>
+<nav>
+	<ul class="pagination">
+		<li><a>left</a></li>
+		<li ng-repeat-start="i in range"></li>
+		<li><a href="javascript:;" ng-click="pageBook(i);">{{i}}</a></li>
+		<li ng-repeat-end></li>
+		<li><a>right</a></li>
+	</ul>
+</nav>
+<div class="modal-body">
+<!-- Default panel contents -->
+<!--    	<input type="text" placeholder="Search Authors by Name"
+   		id="authorToSearch" 
+   			class="col-lg-6 col-md-12 col-sm-12 col-xs-12" 
+   				onkeyup="javascript:searchAuthors();"/>
+ -->
+	<ng-lms-search-box searchtype="Books" maxResult=5 ng-model="searchText"></ng-lms-search-box>
+    	
+	<div id="authorList">
+	  	<table class="table">
+			<tr>
+				<th>Name</th>
+				<th>Author</th>
+				<th>Publisher</th>
+				<th>Genre</th>
+				<th>Edit</th>
+				<th>Delete</th>
+			</tr>
+			<tr ng-repeat="book in books">
+				<td>{{book.title}}</td>
+				<td>
+					<select>
+						<option ng-repeat= "author in book.authors" value={{author.authorId}}>{{author.authorName}}</option>
+					</select>
+				</td>
+				<td>{{book.publisher.publisherName}}</td>
+				<td>
+					<select>
+						<option ng-repeat= "genre in book.genres" value={{genre.genreId}}>{{genre.genreName}}</option>
+					</select>
+				</td>
+				<td>
+					<a href="javascript:;" ng-click="editAuthor(book);" data-target="#myModal1" data-toggle="modal">
+						<i class="fa fa-pencil-square-o"></i>
+					</a>
+				</td>
+				<td><button type="button" class="btn btn-danger btn-circle"> 
+					<i class="fa fa-remove"></i></button></td>
+			</tr>
+		</table>
+	</div>
+</div>
+
+
+
+</section>

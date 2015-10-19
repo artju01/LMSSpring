@@ -81,7 +81,7 @@ public class AuthorDAO extends BaseDAO {
 		String searchText = '%'+authorName+'%';
 		this.setPageNo(pageNo);
 		String query = setPageLimits("select * from tbl_author");
-		query = "select * from ("+query+") as t1 where authorName like ?";
+		query = "select * from ("+query+") as t1 where t1.authorName like ?";
 		return (List<Author>) read(query, new Object[] { searchText });
 	}
 	

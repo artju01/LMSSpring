@@ -1,0 +1,47 @@
+<section data-ng-controller="listPublishersCtrl">
+<div class="modal-header">
+	<button type="button" class="close" data-dismiss="modal"
+		aria-hidden="true">&times;</button>
+	<h4 class="modal-title">Publishers</h4>
+</div>
+<nav>
+	<ul class="pagination">
+		<li><a>left</a></li>
+		<li ng-repeat-start="i in range"></li>
+		<li><a href="javascript:;" ng-click="pagePublisher(i);">{{i}}</a></li>
+		<li ng-repeat-end></li>
+		<li><a>right</a></li>
+	</ul>
+</nav>
+<div class="modal-body">
+
+	<ng-lms-search-box searchtype="Publishers" maxResult=5 ng-model="searchText"></ng-lms-search-box>
+    	
+	<div id="authorList">
+	  	<table class="table">
+			<tr>
+				<th>Name</th>
+				<th>Address</th>
+				<th>Phone</th>
+				<th>Edit</th>
+				<th>Delete</th>
+			</tr>
+			<tr ng-repeat="publisher in publishers">
+				<td>{{publisher.publisherName}}</td>
+				<td>{{publisher.address}}</td>
+				<td>{{publisher.phone}}</td>
+				<td>
+					<a href="javascript:;" ng-click="editAuthor(author);" data-target="#myModal1" data-toggle="modal">
+						<i class="fa fa-pencil-square-o"></i>
+					</a>
+				</td>
+				<td><button type="button" class="btn btn-danger btn-circle"> 
+					<i class="fa fa-remove"></i></button></td>
+			</tr>
+		</table>
+	</div>
+</div>
+
+
+
+</section>
