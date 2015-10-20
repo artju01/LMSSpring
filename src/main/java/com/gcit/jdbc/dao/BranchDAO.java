@@ -5,44 +5,51 @@ import java.util.ArrayList;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.ResultSetExtractor;
+
 import com.gcit.jdbc.entity.Book;
 import com.gcit.jdbc.entity.Borrower;
 import com.gcit.jdbc.entity.Branch;
 
 
 
-public class BranchDAO extends  BaseDAO{
+public class BranchDAO extends BaseDAO implements ResultSetExtractor<List<Branch>>{
+
+	public BranchDAO(JdbcTemplate conn) {
+		super(conn);
+	}
 
 	public void insert(Branch branch) throws SQLException {
-		save("insert into tbl_library_branch (branchName, branchAddress) values (?,?)",
+		template.update("insert into tbl_library_branch (branchName, branchAddress) values (?,?)",
 				new Object[] { branch.getName(), branch.getAddress() });
 	}
 	
 	public void update(Branch branch) throws SQLException {
-		save("update tbl_library_branch set branchName = ? , branchAddress = ? where branchId = ?",
+		template.update("update tbl_library_branch set branchName = ? , branchAddress = ? where branchId = ?",
 				new Object[] { branch.getName(), branch.getAddress(), branch.getBranchId() });
 	}
 
 	public void delete(Branch branch) throws SQLException {
-		save("delete from tbl_book_copies where branchId = ?",
+		template.update("delete from tbl_book_copies where branchId = ?",
 				new Object[] { branch.getBranchId() });
 		
-		save("delete from tbl_book_loans where branchId = ?",
+		template.update("delete from tbl_book_loans where branchId = ?",
 				new Object[] { branch.getBranchId() });
 		
-		save("delete from tbl_library_branch where branchId = ?",
+		template.update("delete from tbl_library_branch where branchId = ?",
 				new Object[] { branch.getBranchId() });
 	}
 	
 	public int readBranchCount() throws SQLException {
-		return readCount("select count(*) from tbl_library_branch");
+		return template.queryForObject("select count(*) from tbl_library_branch", Integer.class);
 	}
 	
-	@SuppressWarnings("unchecked")
 	public Branch readOne(int branchId) throws SQLException {
-		List<Branch> branches = (List<Branch>) read(
+		List<Branch> branches = template.query(
 				"select * from tbl_library_branch where branchId = ?",
-				new Object[] { branchId });
+				new Object[] { branchId }, this);
 		if (branches != null && branches.size() > 0) {
 			return branches.get(0);
 		} else {
@@ -50,37 +57,33 @@ public class BranchDAO extends  BaseDAO{
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public List<Branch> readAllByNameWithPage(String branchName, int pageNo) throws SQLException {
 		String searchText = '%'+branchName+'%';
 		this.setPageNo(pageNo);
 		String query = setPageLimits("select * from tbl_library_branch");
 		query = "select * from ("+query+") as t1 where branchName like ?";
-		return (List<Branch>) read(query, new Object[] { searchText });
+		return template.query(query, new Object[] { searchText }, this);
 	}
 	
-	@SuppressWarnings("unchecked")
 	public List<Branch> readAll() throws SQLException {
-		List<Branch> read = (List<Branch>) read(setPageLimits("select * from tbl_library_branch"), null);
+		List<Branch> read = template.query(setPageLimits("select * from tbl_library_branch"), this);
 		return read;
 	}
 
-	@SuppressWarnings("unchecked")
 	public List<Branch> readAllByBook(Book bk) throws SQLException {
-		return (List<Branch>) read(
+		return template.query(
 				"select * from tbl_library_branch where branchId in (select branchId from tbl_book_copies where bookId = ?)",
-				new Object[] { bk.getBookId() });
+				new Object[] { bk.getBookId() }, this);
 	}
 
-	@SuppressWarnings("unchecked")
-	public List<Borrower> readAllByBorrower(Borrower brw) throws SQLException {
-		return (List<Borrower>) read(
+	public List<Branch> readAllByBorrower(Borrower brw) throws SQLException {
+		return template.query(
 				"select * from tbl_library_branch where branchId in (select branchId from tbl_book_loans where cardNo = ?)",
-				new Object[] { brw.getCardNo() });
+				new Object[] { brw.getCardNo() }, this);
 	}
 	
 	@Override
-	protected List<Branch> convertResult(ResultSet rs) throws SQLException {
+	public List<Branch> extractData(ResultSet rs) throws SQLException, DataAccessException {
 		List<Branch> branches = new ArrayList<Branch>();
 		while (rs.next()) {
 			Branch branch = new Branch();
@@ -89,8 +92,6 @@ public class BranchDAO extends  BaseDAO{
 			branch.setAddress(rs.getString("branchAddress"));
 			branches.add(branch);
 		}
-		
-		conn.close();
 		
 		return branches;
 	}	

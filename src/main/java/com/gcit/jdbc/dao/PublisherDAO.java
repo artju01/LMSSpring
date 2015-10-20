@@ -5,47 +5,42 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.ResultSetExtractor;
+
 import com.gcit.jdbc.entity.Book;
 import com.gcit.jdbc.entity.Publisher;
 
-public class PublisherDAO extends BaseDAO {
+public class PublisherDAO extends BaseDAO implements ResultSetExtractor<List<Publisher>> {
+
+	public PublisherDAO(JdbcTemplate conn) {
+		super(conn);
+	}
 
 	public void insert(Publisher pub) throws SQLException {
-		save("insert into tbl_publisher (publisherName, publisherAddress, publisherPhone) values (?,?,?)",
+		template.update("insert into tbl_publisher (publisherName, publisherAddress, publisherPhone) values (?,?,?)",
 				new Object[] { pub.getPublisherName(), pub.getAddress(), pub.getPhone() });
 	}
 
 	public void update(Publisher pub) throws SQLException {
-		save("update tbl_publisher set publisherName = ?, publisherAddress = ?, publisherPhone = ? where publisherId = ?",
+		template.update("update tbl_publisher set publisherName = ?, publisherAddress = ?, publisherPhone = ? where publisherId = ?",
 				new Object[] { pub.getPublisherName(), pub.getAddress(), pub.getPhone(), pub.getPublisherId() });
 	}
 
 	public void delete(Publisher pub) throws SQLException {
-		save("delete from tbl_publisher where publisherId = ?",
+		template.update("delete from tbl_publisher where publisherId = ?",
 				new Object[] { pub.getPublisherId() });
 	}
 	
 	public int readPublisherCount() throws SQLException {
-		return readCount("select count(*) from tbl_publisher");
+		return template.queryForObject("select count(*) from tbl_publisher", Integer.class);
 	}
 
-	@SuppressWarnings("unchecked")
 	public Publisher readOne(int publisherId) throws SQLException {
-		List<Publisher> publishers = (List<Publisher>) read(
+		List<Publisher> publishers = template.query(
 				"select * from tbl_publisher where publisherId = ?",
-				new Object[] { publisherId });
-		if (publishers != null && publishers.size() > 0) {
-			return publishers.get(0);
-		} else {
-			return null;
-		}
-	}
-	
-	@SuppressWarnings("unchecked")
-	public Publisher readOneByBook(Book bk) throws SQLException {
-		List<Publisher> publishers = (List<Publisher>) read(
-				"select * from tbl_publisher where publisherId = (select pubId from tbl_book where bookId = ?)",
-				new Object[] { bk.getBookId() });
+				new Object[] { publisherId }, this);
 		if (publishers != null && publishers.size() > 0) {
 			return publishers.get(0);
 		} else {
@@ -53,29 +48,37 @@ public class PublisherDAO extends BaseDAO {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
+	public Publisher readOneByBook(Book bk) throws SQLException {
+		List<Publisher> publishers = template.query(
+				"select * from tbl_publisher where publisherId = (select pubId from tbl_book where bookId = ?)",
+				new Object[] { bk.getBookId() }, this);
+		if (publishers != null && publishers.size() > 0) {
+			return publishers.get(0);
+		} else {
+			return null;
+		}
+	}
+
 	public List<Publisher> readAll() throws SQLException {
-		return (List<Publisher>) read(setPageLimits("select * from tbl_publisher"), null);
+		return template.query(setPageLimits("select * from tbl_publisher"), this);
 	}
 	
-	@SuppressWarnings("unchecked")
 	public List<Publisher> readAllByName(String publisherName) throws SQLException {
 		String searchText = '%'+publisherName+'%';
-		return (List<Publisher>) read("select * from tbl_publisher where publisherName like ?", new Object[] { searchText });
+		return template.query("select * from tbl_publisher where publisherName like ?", new Object[] { searchText }, this);
 	}
 	
-	@SuppressWarnings("unchecked")
 	public List<Publisher> readAllByNameWithPage(String pubName, int pageNo) throws SQLException {
 		String searchText = '%'+pubName+'%';
 		this.setPageNo(pageNo);
 		String query = setPageLimits("select * from tbl_publisher");
 		query = "select * from ("+query+") as t1 where publisherName like ?";
-		return (List<Publisher>) read(query, new Object[] { searchText });
+		return template.query(query, new Object[] { searchText }, this);
 	}
 	
 
 	@Override
-	protected List<Publisher> convertResult(ResultSet rs) throws SQLException {
+	public List<Publisher> extractData(ResultSet rs) throws SQLException, DataAccessException {
 		List<Publisher> publishers = new ArrayList<Publisher>();
 		while (rs.next()) {
 			Publisher pb = new Publisher();
@@ -85,8 +88,6 @@ public class PublisherDAO extends BaseDAO {
 			pb.setPhone(rs.getString("publisherPhone"));
 			publishers.add(pb);
 		}
-
-		conn.close();
 		
 		return publishers;
 	}

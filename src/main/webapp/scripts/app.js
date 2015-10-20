@@ -144,8 +144,8 @@ lmsModule.controller('editAuthorCtrl', ["$scope", "$http", "$modal","$rootScope"
 	};
 	
 	$scope.updateAuthor = function() {
-		sharedAuthor.getAuthor().authorName = $scope.authorName;
-		$http.post("editAuthor",sharedAuthor.getAuthor()).
+		$rootScope.author.authorNamee = $scope.authorName;
+		$http.post("editAuthor",$rootScope.author).
 		success(function(data) {
 			alert("Success");	
 			editAuthorModal.close('close');

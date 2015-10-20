@@ -1,7 +1,12 @@
 package com.gcit.lms.config;
 
+import org.apache.commons.dbcp.BasicDataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.gcit.jdbc.dao.AuthorDAO;
 import com.gcit.jdbc.dao.BookDAO;
@@ -14,6 +19,7 @@ import com.gcit.jdbc.dao.PublisherDAO;
 import com.gcit.jdbc.service.AdministratorService;
 
 @Configuration
+@EnableTransactionManagement
 public class LMSConfiguration {
 	
 	@Bean
@@ -23,40 +29,64 @@ public class LMSConfiguration {
 
 	@Bean
 	public BookDAO bookDAO() {
-		return new BookDAO();
+		return new BookDAO(template());
 	}
 	
 	@Bean
 	public BranchDAO branchDAO() {
-		return new BranchDAO();
+		return new BranchDAO(template());
 	}
 	
 	@Bean
 	public AuthorDAO authorDAO() {
-		return new AuthorDAO();
+		return new AuthorDAO(template());
 	}
 	
 	@Bean
 	public PublisherDAO pubDAO() {
-		return new PublisherDAO();
+		return new PublisherDAO(template());
 	}
 	
 	@Bean
 	public BorrowerDAO borrowDAO() {
-		return new BorrowerDAO();
+		return new BorrowerDAO(template());
 	}
 	
 	@Bean
 	public GenreDAO genreDAO() {
-		return new GenreDAO();
+		return new GenreDAO(template());
 	}
 	
 	@Bean
 	public Book_CopiesDAO bookCopiesDAO() {
-		return new Book_CopiesDAO();
+		return new Book_CopiesDAO(template());
 	}
 	
 	@Bean Book_LoansDAO bookLoansDAO() {
-		return new Book_LoansDAO();
+		return new Book_LoansDAO(template());
+	}
+	
+	@Bean
+	public PlatformTransactionManager txManager() {
+		PlatformTransactionManager tx = new DataSourceTransactionManager(datasource());
+		return tx;
+	}
+	
+	@Bean
+	public JdbcTemplate template() {
+		JdbcTemplate template = new JdbcTemplate();
+		template.setDataSource(datasource());
+		return template;
+	}
+	
+	@Bean
+	public BasicDataSource datasource() {
+		BasicDataSource ds = new BasicDataSource();
+		ds.setDriverClassName("com.mysql.jdbc.Driver");
+		ds.setUrl("jdbc:mysql://localhost:3306/library");
+		ds.setUsername("root");
+		ds.setPassword("");
+		
+		return ds;
 	}
 }

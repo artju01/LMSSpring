@@ -5,39 +5,46 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.ResultSetExtractor;
+
 import com.gcit.jdbc.entity.Book;
 import com.gcit.jdbc.entity.Genre;
 
 
-public class GenreDAO extends BaseDAO{
+public class GenreDAO extends BaseDAO implements ResultSetExtractor<List<Genre>>{
+
+	public GenreDAO(JdbcTemplate conn) {
+		super(conn);
+	}
 
 	public void insert(Genre gen) throws SQLException {
-		save("insert into tbl_genre (genre_name) values (?)",
+		template.update("insert into tbl_genre (genre_name) values (?)",
 				new Object[] { gen.getGenreName() });
 	}
 	
 	public void update(Genre gen) throws SQLException {
-		save("update tbl_genre set genre_name = ? where genre_id = ?",
+		template.update("update tbl_genre set genre_name = ? where genre_id = ?",
 				new Object[] { gen.getGenreName(), gen.getGenreId() });
 	}
 	
 	public void delete(Genre gen) throws SQLException {
-		save("delete from tbl_book_genre where genre_id = ?",
+		template.update("delete from tbl_book_genre where genre_id = ?",
 				new Object[] { gen.getGenreId() });
 		
-		save("delete from tbl_genre where genre_id = ?",
+		template.update("delete from tbl_genre where genre_id = ?",
 				new Object[] { gen.getGenreId() });
 	}
 
 	public int readGenreCount() throws SQLException {
-		return readCount("select count(*) from tbl_genre");
+		return template.queryForObject("select count(*) from tbl_genre", Integer.class);
 	}
 	
-	@SuppressWarnings("unchecked")
 	public Genre readOne(int genreId) throws SQLException {
-		List<Genre> gens = (List<Genre>) read(
+		List<Genre> gens = template.query(
 				"select * from tbl_genre where genre_id = ?",
-				new Object[] { genreId });
+				new Object[] { genreId }, this);
 		if (gens != null && gens.size() > 0) {
 			return gens.get(0);
 		} else {
@@ -45,27 +52,23 @@ public class GenreDAO extends BaseDAO{
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public List<Genre> readAll() throws SQLException {
-		return (List<Genre>) read("select * from tbl_genre", null);
+		return template.query("select * from tbl_genre", this);
 	}
 	
-
-	@SuppressWarnings("unchecked")
 	public List<Genre> readGenreByBook(Book book) throws SQLException {
-		List<Genre> gens = (List<Genre>) read ("select * from tbl_genre where genre_id in (select genre_id from tbl_book_genres where bookId = ?)", 
-				new Object[] {book.getBookId()});
+		List<Genre> gens = template.query ("select * from tbl_genre where genre_id in (select genre_id from tbl_book_genres where bookId = ?)", 
+				new Object[] {book.getBookId()}, this);
 		return gens;
 	}
 	
-	@SuppressWarnings("unchecked")
 	public List<Genre> readAllByName(String genreName) throws SQLException {
 		String searchText = '%'+genreName+'%';
-		return (List<Genre>) read("select * from tbl_genre where genre_name like ?", new Object[] { searchText });
+		return template.query("select * from tbl_genre where genre_name like ?", new Object[] { searchText }, this);
 	}
 
 	@Override
-	protected List<Genre> convertResult(ResultSet rs) throws SQLException {
+	public List<Genre> extractData(ResultSet rs) throws SQLException, DataAccessException {
 		List<Genre> gens = new ArrayList<Genre>();
 		while (rs.next()) {
 			Genre gen = new Genre();
@@ -73,9 +76,7 @@ public class GenreDAO extends BaseDAO{
 			gen.setGenreName(rs.getString("genre_name"));
 			gens.add(gen);
 		}
-		
-		conn.close();
-		
+
 		return gens;
 	}
 

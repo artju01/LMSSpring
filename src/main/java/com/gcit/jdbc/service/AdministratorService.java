@@ -4,6 +4,8 @@ import java.sql.SQLException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.gcit.jdbc.dao.AuthorDAO;
 import com.gcit.jdbc.dao.BookDAO;
@@ -21,6 +23,8 @@ import com.gcit.jdbc.entity.Branch;
 import com.gcit.jdbc.entity.Genre;
 import com.gcit.jdbc.entity.Publisher;
 
+
+@Service
 public class AdministratorService {
 	@Autowired
 	BookDAO bookDAO;
@@ -77,7 +81,7 @@ public class AdministratorService {
 		bk.setLoans(bookLoansDAO.readAllByBook(bk));
 	}
 	
-	
+	@Transactional
 	public void addBook(Book bk) throws SQLException {
 		/*List<Book>books = bookDAO.readAll();
 		for (Book book : books) {
@@ -111,6 +115,7 @@ public class AdministratorService {
 		}
 	}
 
+	@Transactional
 	public void deleteBook(Book bk) throws SQLException {
 		try {
 			bookDAO.delete(bk);
@@ -121,6 +126,7 @@ public class AdministratorService {
 		
 	}
 	
+	@Transactional
 	public void updateBook(Book bk) throws SQLException {
 		try {
 			bookDAO.update(bk);
@@ -135,9 +141,7 @@ public class AdministratorService {
 	}
 	
 	public List<Book> searchBooksWithPage(String searchText, int pageNo) throws SQLException {
-		BookDAO  bd = new BookDAO();
-		List<Book> books = bd.readAllByNameWithPage(searchText,pageNo);
-		
+		List<Book> books = bookDAO.readAllByNameWithPage(searchText,pageNo);
 		for (Book bk:books) {
 			assignBookData(bk);
 		}
@@ -160,6 +164,7 @@ public class AdministratorService {
 		return authorDAO.readAuthorCount();
 	}
 	
+	@Transactional
 	public void addAuthor(Author author) throws SQLException {
 		try {
 			authorDAO.insert(author);
@@ -180,6 +185,7 @@ public class AdministratorService {
 		return authors;
 	}
  	
+	@Transactional
 	public void updateAuthor(Author author) throws SQLException {
 		try {
 			authorDAO.update(author);
@@ -189,6 +195,7 @@ public class AdministratorService {
 		}
 	}
 	
+	@Transactional
 	public void updateAuthorByName(String exName, String newName) throws SQLException {
 		Author author = authorDAO.readOneByName(exName);
 		if (author != null) {
@@ -197,6 +204,7 @@ public class AdministratorService {
 		}
 	}
 	
+	@Transactional
 	public void deleteAuthor(Author author) throws SQLException {
 		try {
 			authorDAO.delete(author);
@@ -206,6 +214,7 @@ public class AdministratorService {
 		}
 	}
 	
+	@Transactional
 	public void addPublisher(Publisher pub) throws SQLException {
 		try {
 			pubDAO.insert(pub);
@@ -215,6 +224,7 @@ public class AdministratorService {
 		}
 	}
 	
+	@Transactional
 	public void updatePublisher(Publisher pub) throws SQLException
 	{
 		try {
@@ -225,6 +235,7 @@ public class AdministratorService {
 		}
 	}
 	
+	@Transactional
 	public void deletePublisher(Publisher pub) throws SQLException {
 		try {
 			pubDAO.delete(pub);
@@ -241,9 +252,8 @@ public class AdministratorService {
 	public List<Publisher> getAllPublisher(int pageNo) throws SQLException {
 		if(pageNo <= 0)
 			pageNo = 1;
-		PublisherDAO pd = new PublisherDAO();
-		pd.setPageNo(pageNo);
-		List<Publisher> pubs = pd.readAll();
+		pubDAO.setPageNo(pageNo);
+		List<Publisher> pubs = pubDAO.readAll();
 		
 		return pubs;
 	}
@@ -268,6 +278,7 @@ public class AdministratorService {
 		return branches;
 	}
 	
+	@Transactional
 	public void addBranch(Branch branch) throws SQLException {
 		try {
 			branchDAO.insert(branch);
@@ -277,6 +288,7 @@ public class AdministratorService {
 		}
 	}
 	
+	@Transactional
 	public void updateBranch(Branch branch) throws SQLException {
 		try {
 			branchDAO.update(branch);
@@ -286,6 +298,7 @@ public class AdministratorService {
 		}
 	}
 	
+	@Transactional
 	public void deleteBranch(Branch branch) throws SQLException {
 		try {
 			branchDAO.delete(branch);
@@ -314,6 +327,7 @@ public class AdministratorService {
 		return borrowers;
 	}
 	
+	@Transactional
 	public void addBorrower(Borrower borrow) throws SQLException {
 		try {
 			borrowDAO.insert(borrow);
@@ -323,6 +337,7 @@ public class AdministratorService {
 		}
 	}
 	
+	@Transactional
 	public void updateBorrower(Borrower borrow) throws SQLException {
 		try {
 			borrowDAO.update(borrow);
@@ -332,6 +347,7 @@ public class AdministratorService {
 		}
 	}
 	
+	@Transactional
 	public void deleteBorrower(Borrower borrow) throws SQLException {
 		try {
 			borrowDAO.delete(borrow);
@@ -351,6 +367,7 @@ public class AdministratorService {
 		return borrowers;
 	}
 	
+	@Transactional
 	public void updateBookLoans(BookLoans loan) throws SQLException {
 		try {
 			bookLoansDAO.update(loan);
@@ -380,6 +397,7 @@ public class AdministratorService {
 		return bookLoans;
 	}
 	
+	@Transactional
 	public void updateBookLoansDueDate(BookLoans bookloan) throws SQLException {
 		bookLoansDAO.updateDueDate(bookloan);
 	}

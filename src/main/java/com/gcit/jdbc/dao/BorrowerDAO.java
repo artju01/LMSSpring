@@ -5,28 +5,36 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.ResultSetExtractor;
+
 import com.gcit.jdbc.entity.Book;
 import com.gcit.jdbc.entity.BookLoans;
 import com.gcit.jdbc.entity.Borrower;
 
-public class BorrowerDAO extends BaseDAO {
+public class BorrowerDAO extends BaseDAO implements ResultSetExtractor<List<Borrower>>{
+
+	public BorrowerDAO(JdbcTemplate conn) {
+		super(conn);
+	}
 
 	public void insert(Borrower borrow) throws SQLException {
-		save("insert into tbl_borrower (name, address, phone) values (?,?,?)",
+		template.update("insert into tbl_borrower (name, address, phone) values (?,?,?)",
 				new Object[] { borrow.getName(), borrow.getAddress(), borrow.getPhone() });
 	}
 	
 	public void update(Borrower borrow) throws SQLException {
-		save("update tbl_borrower set name = ?, address = ?, phone = ? where cardNo = ?",
+		template.update("update tbl_borrower set name = ?, address = ?, phone = ? where cardNo = ?",
 				new Object[] { borrow.getName(), borrow.getAddress(), borrow.getPhone(), borrow.getCardNo() });
 		
-		save("delete from tbl_book_loans where cardNo = ?", 
+		template.update("delete from tbl_book_loans where cardNo = ?", 
 				new Object[] { borrow.getCardNo() });
 		
 		if (borrow.getLoans() != null) {
 			for (BookLoans loan : borrow.getLoans()) {
 				if (loan.getBorrower() != null && loan.getBook() != null && loan.getBranch() != null) {
-					save("insert into tbl_book_loans (bookId, branchId, cardNo, dteOut, dueDate, dateIn)", 
+					template.update("insert into tbl_book_loans (bookId, branchId, cardNo, dteOut, dueDate, dateIn)", 
 							new Object[] { loan.getBook().getBookId(), loan.getBranch().getBranchId(), loan.getBorrower().getCardNo(),
 							loan.getDateOut(), loan.getDueDate(), loan.getDateIn()});	
 				}
@@ -35,21 +43,20 @@ public class BorrowerDAO extends BaseDAO {
 	}
 
 	public void delete(Borrower borrow) throws SQLException {
-		save("delete from tbl_book_loans where cardNo = ?",
+		template.update("delete from tbl_book_loans where cardNo = ?",
 				new Object[] { borrow.getCardNo()});
 		
-		save("delete from tbl_borrower where cardNo = ?",
+		template.update("delete from tbl_borrower where cardNo = ?",
 				new Object[] { borrow.getCardNo()});
 	}
 
 	public int readBorrowerCount() throws SQLException {
-		return readCount("select count(*) from tbl_borrower");
+		return template.queryForObject("select count(*) from tbl_borrower", Integer.class);
 	}
 	
-	@SuppressWarnings("unchecked")
 	public Borrower readOne(int cardNo) throws SQLException {
-		List<Borrower> borrows = (List<Borrower>) read("select * from tbl_borrower where cardNo = ?"
-				, new Object[] {cardNo});
+		List<Borrower> borrows = template.query("select * from tbl_borrower where cardNo = ?"
+				, new Object[] {cardNo}, this);
 		if (borrows != null && borrows.size() > 0) {
 			return borrows.get(0);
 		}
@@ -58,29 +65,26 @@ public class BorrowerDAO extends BaseDAO {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public List<Borrower> readAll() throws SQLException {
-		return (List<Borrower>) read(setPageLimits("select * from tbl_borrower"), null);
+		return template.query(setPageLimits("select * from tbl_borrower"), this);
 	}
 	
-	@SuppressWarnings("unchecked")
 	public List<Borrower> readByBook(Book bk) throws SQLException {
-		List<Borrower> read = (List<Borrower>) read("select * from tbl_borrower where cardNo in (select cardNo from table_book_loans where bookId = ?)"
-				, new Object[] {bk.getBookId()} );
+		List<Borrower> read = template.query("select * from tbl_borrower where cardNo in (select cardNo from table_book_loans where bookId = ?)"
+				, new Object[] {bk.getBookId()}, this );
 		return read;
 	}
 
-	@SuppressWarnings("unchecked")
 	public List<Borrower> readAllByNameWithPage(String branchName, int pageNo) throws SQLException {
 		String searchText = '%'+branchName+'%';
 		this.setPageNo(pageNo);
 		String query = setPageLimits("select * from tbl_borrower");
 		query = "select * from ("+query+") as t1 where name like ?";
-		return (List<Borrower>) read(query, new Object[] { searchText });
+		return template.query(query, new Object[] { searchText }, this);
 	}
 	
 	@Override
-	protected List<Borrower> convertResult(ResultSet rs) throws SQLException {
+	public List<Borrower> extractData(ResultSet rs) throws SQLException, DataAccessException {
 		List<Borrower> borrows = new ArrayList<Borrower>();
 		while (rs.next()) {
 			Borrower borrow = new Borrower();
@@ -90,8 +94,6 @@ public class BorrowerDAO extends BaseDAO {
 			borrow.setPhone(rs.getString("phone"));
 			borrows.add(borrow);
 		}
-		
-		conn.close();
 		
 		return borrows;
 	}

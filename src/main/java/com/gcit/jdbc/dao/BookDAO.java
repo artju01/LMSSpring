@@ -1,36 +1,61 @@
 package com.gcit.jdbc.dao;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.jdbc.core.ResultSetExtractor;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 
 import com.gcit.jdbc.entity.Author;
 import com.gcit.jdbc.entity.Book;
 import com.gcit.jdbc.entity.BookCopies;
-import com.gcit.jdbc.entity.BookLoans;
 import com.gcit.jdbc.entity.Genre;
 import com.gcit.jdbc.entity.Publisher;
 
-public class BookDAO extends BaseDAO {
+public class BookDAO extends BaseDAO implements ResultSetExtractor<List<Book>>{
 
-	public void insert(Book book) throws SQLException {
+	public BookDAO(JdbcTemplate conn) {
+		super(conn);
+	}
+
+	public void insert(final Book book) throws SQLException {
 		if (book.getPublisher() != null) {
-			int bookId = saveWithId(
-					"insert into tbl_book (title, pubId) values (?,?)",
-					new Object[] { book.getTitle(),
-							book.getPublisher().getPublisherId() });
+			KeyHolder holder = new GeneratedKeyHolder();
+			template.update(new PreparedStatementCreator() {
+
+				@Override
+				public PreparedStatement createPreparedStatement(
+						Connection connection) throws SQLException {
+					PreparedStatement ps = connection.prepareStatement(
+							"insert into tbl_book (title, pubId) values (?,?)",
+							Statement.RETURN_GENERATED_KEYS);
+					ps.setString(1, book.getTitle());
+					ps.setInt(2, book.getPublisher().getPublisherId());
+					return ps;
+				}
+			}, holder);
+
+			int bookId = holder.getKey().intValue();
 			
 			if (book.getAuthors() != null) {
 				for (Author auth : book.getAuthors()) {
-					save("insert into tbl_book_authors (bookId, authorId) values (?,?)",
+					template.update("insert into tbl_book_authors (bookId, authorId) values (?,?)",
 							new Object[] { bookId, auth.getAuthorId() });
 				}
 			}
 			
 			if (book.getGenres() != null) {
 				for (Genre genre : book.getGenres()) {
-					save("insert into tbl_book_genres (bookId, genre_id) values (?,?)",
+					template.update("insert into tbl_book_genres (bookId, genre_id) values (?,?)",
 							new Object[] { bookId, genre.getGenreId() });
 				}
 			}
@@ -38,7 +63,7 @@ public class BookDAO extends BaseDAO {
 			if (book.getCopies() != null) {
 				for (BookCopies copy : book.getCopies()) {
 					if (copy.getBranch() != null) {
-						save ("insert into tbl_book_copies (bookId, branchId, noOfCopies)",
+						template.update ("insert into tbl_book_copies (bookId, branchId, noOfCopies)",
 								new Object[] {book.getBookId(), copy.getBranch().getBranchId(), copy.getNoOfCopies()});
 					}
 				}
@@ -50,25 +75,25 @@ public class BookDAO extends BaseDAO {
 	public void update(Book book) throws SQLException {
 		
 		if (book.getPublisher() != null) {
-			save("update tbl_book  set title = ?, pubId = ? where bookId = ?",
+			template.update("update tbl_book  set title = ?, pubId = ? where bookId = ?",
 					new Object[] { book.getTitle(), book.getPublisher().getPublisherId(), book.getBookId() });
-		}
+		}	
 		
-		save("delete from tbl_book_authors where bookId = ?",
+		template.update("delete from tbl_book_authors where bookId = ?",
 					new Object[] { book.getBookId() });
 		if (book.getAuthors() != null) {
 			for (Author auth : book.getAuthors()) {
-				save("insert into tbl_book_authors (bookId, authorId) values (?,?)",
+				template.update("insert into tbl_book_authors (bookId, authorId) values (?,?)",
 						new Object[] { book.getBookId(), auth.getAuthorId() });
 			}
 		}
 
 		
-		save("delete from tbl_book_genres where bookId = ?",
+		template.update("delete from tbl_book_genres where bookId = ?",
 				new Object[] { book.getBookId() });
 		if (book.getGenres() != null) {
 			for (Genre genre : book.getGenres()) {
-				save("insert into tbl_book_genres (bookId, genre_id) values (?,?)",
+				template.update("insert into tbl_book_genres (bookId, genre_id) values (?,?)",
 						new Object[] { book.getBookId(), genre.getGenreId() });
 			}
 		}
@@ -100,31 +125,31 @@ public class BookDAO extends BaseDAO {
 	}
 
 	public void delete(Book book) throws SQLException {
-		save("delete from tbl_book_authors where bookId = ?",
+		template.update("delete from tbl_book_authors where bookId = ?",
 				new Object[] { book.getBookId()});
 		
-		save("delete from tbl_book_genres where bookId = ?",
+		template.update("delete from tbl_book_genres where bookId = ?",
 				new Object[] { book.getBookId()});
 		
-		save("delete from tbl_book_copies where bookId = ?",
+		template.update("delete from tbl_book_copies where bookId = ?",
 				new Object[] { book.getBookId()});
 		
-		save("delete from tbl_book_loans where bookId = ?",
+		template.update("delete from tbl_book_loans where bookId = ?",
 				new Object[] { book.getBookId()});
 		
-		save("delete from tbl_book where bookId = ?",
+		template.update("delete from tbl_book where bookId = ?",
 				new Object[] { book.getBookId()});
 	}
 	
 	public int readBookCount() throws SQLException {
-		return readCount("select count(*) from tbl_book");
+		return template.queryForObject("select count(*) from tbl_book", Integer.class);
 	}
 
-	@SuppressWarnings("unchecked")
+	
 	public Book readOne(int bookId) throws SQLException {
-		List<Book> books = (List<Book>) read(
+		List<Book> books = template.query(
 					"select * from tbl_book where bookId = ?",
-					new Object[] { bookId });
+					new Object[] { bookId }, this);
 		if (books != null && books.size() > 0) {
 			return books.get(0);
 		} else {
@@ -132,41 +157,40 @@ public class BookDAO extends BaseDAO {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
+	
 	public List<Book> readAll() throws SQLException {
-			return (List<Book>) read(setPageLimits("select * from tbl_book"), null);
+			return template.query(setPageLimits("select * from tbl_book"), this);
 	}
 	 
-	@SuppressWarnings("unchecked")
+	
 	public List<Book> readAllByAuthor(Author auth) throws SQLException {
-		return (List<Book>) read(
+		return template.query(
 					"select * from tbl_book where bookId in (select bookId from tbl_book_authors where authorId = ?)",
-					new Object[] { auth.getAuthorId() });
+					new Object[] { auth.getAuthorId() }, this);
 	}
 	
-	@SuppressWarnings("unchecked")
+	
 	public List<Book> readAllByPublisher(Publisher pub) throws SQLException {
-		return (List<Book>) read( "select * from tbl_book where pubId = ?",
-					new Object[] { pub.getPublisherId() });
+		return template.query( "select * from tbl_book where pubId = ?",
+					new Object[] { pub.getPublisherId() }, this);
 	}
 	
-	@SuppressWarnings("unchecked")
+	
 	public List<Book> readAllByGenres(Genre gen) throws SQLException {
-		return (List<Book>) read("select * from tbl_book where bookId = in (select bookId from tbl_book_genres where genre_id = ?)",
-					new Object[] { gen.getGenreId() });
+		return template.query("select * from tbl_book where bookId = in (select bookId from tbl_book_genres where genre_id = ?)",
+					new Object[] { gen.getGenreId() }, this);
 	}
 	
-	@SuppressWarnings("unchecked")
 	public List<Book> readAllByNameWithPage(String branchName, int pageNo) throws SQLException {
 		String searchText = '%'+branchName+'%';
 		this.setPageNo(pageNo);
 		String query = setPageLimits("select * from tbl_book");
 		query = "select * from ("+query+") as t1 where title like ?";
-		return (List<Book>) read(query, new Object[] { searchText });
+		return template.query(query, new Object[] { searchText }, this);
 	}
 
 	@Override
-	protected List<Book> convertResult(ResultSet rs) throws SQLException {
+	public List<Book> extractData(ResultSet rs) throws SQLException, DataAccessException {
 		List<Book> books = new ArrayList<Book>();
 		while (rs.next()) {
 			Book book = new Book();
@@ -174,9 +198,7 @@ public class BookDAO extends BaseDAO {
 			book.setTitle(rs.getString("title"));
 			books.add(book);
 		}
-		
-		conn.close();
-		
+	
 		return books;
 	}
 

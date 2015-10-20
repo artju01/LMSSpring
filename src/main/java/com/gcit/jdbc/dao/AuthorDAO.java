@@ -9,36 +9,43 @@ import com.gcit.jdbc.entity.Book;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class AuthorDAO extends BaseDAO {
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.ResultSetExtractor;
+
+public class AuthorDAO extends BaseDAO implements ResultSetExtractor<List<Author>> {
+	
+	public AuthorDAO(JdbcTemplate conn) {
+		super(conn);
+	}
 	
 	public void insert(Author auth) throws SQLException {
-		save("insert into tbl_author (authorName) values (?)",
+		template.update("insert into tbl_author (authorName) values (?)",
 				new Object[] { auth.getAuthorName() });
 	}
 	
 	public void update(Author auth) throws SQLException {
-		save("update tbl_author set authorName = ? where authorId = ?",
+		template.update("update tbl_author set authorName = ? where authorId = ?",
 				new Object[] { auth.getAuthorName(), auth.getAuthorId() });
 	}
 
 	public void delete(Author auth) throws SQLException {
-		save("delete from tbl_book_authors where authorId = ?",
+		template.update("delete from tbl_book_authors where authorId = ?",
 				new Object[] { auth.getAuthorId() });
 		
-		save("delete from tbl_author where authorId = ?",
+		template.update("delete from tbl_author where authorId = ?",
 				new Object[] { auth.getAuthorId() });
 		
 	}
 	
 	public int readAuthorCount() throws SQLException {
-		return readCount("select count(*) from tbl_author");
+		return template.queryForObject("select count(*) from tbl_author", Integer.class);
 	}
 	
-	@SuppressWarnings("unchecked")
 	public Author readOne(int authorId) throws SQLException {
-		List<Author> authors = (List<Author>) read(
+		List<Author> authors = template.query(
 				"select * from tbl_author where authorId = ?",
-				new Object[] { authorId });
+				new Object[] { authorId }, this);
 		if (authors != null && authors.size() > 0) {
 			return authors.get(0);
 		} else {
@@ -46,11 +53,10 @@ public class AuthorDAO extends BaseDAO {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
 	public Author readOneByName(String name) throws SQLException {
-		List<Author> authors = (List<Author>) read(
+		List<Author> authors = template.query(
 				"select * from tbl_author where authorName = ?",
-				new Object[] { name });
+				new Object[] { name }, this);
 		if (authors != null && authors.size() > 0) {
 			return authors.get(0);
 		} else {
@@ -58,35 +64,32 @@ public class AuthorDAO extends BaseDAO {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public List<Author> readAll() throws SQLException {
-		return (List<Author>) read(setPageLimits("select * from tbl_author"), null);
+		return template.query(setPageLimits("select * from tbl_author"), this);
 	}
 
-	@SuppressWarnings("unchecked")
 	public List<Author> readAllByBook(Book bk) throws SQLException {
-		return (List<Author>) read(
+		return template.query(
 				"select * from tbl_author where authorId in (select authorId from tbl_book_authors where bookId = ?)",
-				new Object[] { bk.getBookId() });
+				new Object[] { bk.getBookId() }, this);
 	}
 	
-	@SuppressWarnings("unchecked")
 	public List<Author> readAllByName(String authorName) throws SQLException {
 		String searchText = '%'+authorName+'%';
-		return (List<Author>) read("select * from tbl_author where authorName like ?", new Object[] { searchText });
+		return template.query("select * from tbl_author where authorName like ?", new Object[] { searchText }, this);
 	}
 	
-	@SuppressWarnings("unchecked")
 	public List<Author> readAllByNameWithPage(String authorName, int pageNo) throws SQLException {
 		String searchText = '%'+authorName+'%';
 		this.setPageNo(pageNo);
 		String query = setPageLimits("select * from tbl_author");
 		query = "select * from ("+query+") as t1 where t1.authorName like ?";
-		return (List<Author>) read(query, new Object[] { searchText });
+		return template.query(query, new Object[] { searchText }, this);
 	}
 	
 	@Override
-	protected List<Author> convertResult(ResultSet rs) throws SQLException {
+	public List<Author> extractData(ResultSet rs) throws SQLException,
+			DataAccessException {
 		List<Author> authors = new ArrayList<Author>();
 		while (rs.next()) {
 			Author auth = new Author();
@@ -94,11 +97,8 @@ public class AuthorDAO extends BaseDAO {
 			auth.setAuthorName(rs.getString("authorName"));
 			authors.add(auth);
 		}
-		
-		conn.close();
-		
+
 		return authors;
 	}
-
 
 }
