@@ -68,8 +68,6 @@ lmsModule.config([ "$routeProvider", function($routeProvider) {
 		templateUrl : "index.html"
 	}).when("/listAuthors", {
 		templateUrl : "listAuthors.html"
-	}).when("/editAuthorModal", {
-		templateUrl : "editAuthorModal.html"
 	}).when("/listBooks", {
 		templateUrl : "listBooks.html"
 	}).when("/listPublishers", {
@@ -89,46 +87,98 @@ lmsModule.controller('homeCtrl', ["$scope", "$http", "$modal", function($scope, 
 	};
 }]);
 
-lmsModule.controller('listAuthorsCtrl', ["$scope", "$http", "$modal", "$rootScope" ,"sharedAuthor",
+lmsModule.controller('listAuthorsCtrl', ["$scope", "$http", "$modal", "$rootScope" ,"sharedAuthor",      
                                          function($scope, $http, $modal, sharedAuthor, $rootScope) {
 	$http.post("countAuthors").
 		success(function(data) {
 			var range = [];
-			for(var i=1;(i<=data/10);i++) {
+			var maxPage = Math.ceil(data/10);
+			for(var i=1;(i<=maxPage);i++) {
 			  range.push(i);
 			}
 			$scope.range = range;
 
-			$http.post("listAuthors/1").
-				success(function(data) {
-					$scope.authors = data;
-				});
+			currentPage = 1;
+			$scope.reloadData();
 		});
+
+	$scope.reloadData = function () {
+		$http.post("listAuthors/"+currentPage).
+		success(function(data) {
+			$scope.authors = data;
+		});
+		
+	}
 	
 	$scope.$on('notification', function (evt, data) {
-        console.log(data);
         $scope.authors = data;
     });
 	
 	$scope.pageAuthor = function(pgNo) {
 		currentPage = pgNo;
-		$http({
-		    method: "POST",
-		    url: "listAuthors/"+pgNo
-		}).success(function(data) {
-				$scope.authors = data;
-			});
+		$scope.reloadData();
 	}
 	
 	$scope.editAuthor = function(author) {
 		//sharedAuthor.setAuthor(author)
 		$rootScope.author = author;
-		editAuthorModal = $modal.open({
+		editModalWindow = $modal.open({
 			templateUrl: "editAuthorModal.html",
 			controller: "editAuthorCtrl"
 		});
+		
 	}
+	
+	$scope.deleteAuthor = function(author) {
+		$rootScope.author = author;
+		console.log($rootScope);
+		deleteModalWindow = $modal.open({
+			templateUrl: "deleteAuthorModal.html",
+			controller: "deleteAuthorCtrl"
+		});
+		
+		deleteModalWindow.result.then(function () {
+			$http.post("countAuthors").
+			success(function(data) {
+				var range = [];
+				var maxPage = Math.ceil(data/10);
+				currentPage = maxPage;
+				for(var i=1;(i<=maxPage);i++) {
+				  range.push(i);
+				}
+				$scope.range = range;
+				$scope.reloadData();
+			});
+		});
+	}
+	
+	$scope.addAuthor = function(author) {
+		modalWindow = $modal.open({
+			templateUrl: "addAuthorModal.html",
+			controller: "addAuthorCtrl"
+		});
+		
+		modalWindow.result.then(function () {
+			$http.post("countAuthors").
+			success(function(data) {
+				var range = [];
+				var maxPage = Math.ceil(data/10);
+				currentPage = maxPage;
+				for(var i=1;(i<=maxPage);i++) {
+				  range.push(i);
+				}
+				$scope.range = range;
+				$scope.reloadData();
+			});
+		});
+	}
+	
+	
 }]);
+
+
+
+
 
 //we can use either service(sharedAuthor) or $rootScope  
 //if we use service, we need to create services for each data.
@@ -136,23 +186,59 @@ lmsModule.controller('listAuthorsCtrl', ["$scope", "$http", "$modal", "$rootScop
 
 lmsModule.controller('editAuthorCtrl', ["$scope", "$http", "$modal","$rootScope", "sharedAuthor", 
                                         function($scope, $http, $modal,sharedAuthor, $rootScope) {
+	console.log($rootScope);
 	$scope.authorName = $rootScope.author.authorName;
-		//sharedAuthor.getAuthor().authorName;
-	
 	$scope.cancel = function() {
-		editAuthorModal.close('close');
+		editModalWindow.close('close');
 	};
 	
 	$scope.updateAuthor = function() {
-		$rootScope.author.authorNamee = $scope.authorName;
+		$rootScope.author.authorName = $scope.authorName;
 		$http.post("editAuthor",$rootScope.author).
 		success(function(data) {
 			alert("Success");	
-			editAuthorModal.close('close');
+			editModalWindow.close('close');
 		});
 	}
 	
 }]);
+
+lmsModule.controller('deleteAuthorCtrl', ["$scope", "$http", "$modal","$rootScope", "sharedAuthor", 
+                                          function($scope, $http, $modal,sharedAuthor, $rootScope) {
+  	console.log($rootScope);
+  	$scope.cancel = function() {
+  		deleteModalWindow.close('close');
+  	};
+  	
+  	$scope.deleteAuthor = function() {
+  		$http.post("deleteAuthor",$rootScope.author).
+  		success(function(data) {
+  			alert("Success");	
+  			deleteModalWindow.close('close');
+  		});
+  	}
+  	
+  }]);
+
+lmsModule.controller('addAuthorCtrl', ["$scope", "$http", 
+                                       function($scope, $http) {
+        	
+        	$scope.cancel = function() {
+        		modalWindow.close('close');
+        	};
+        	
+        	$scope.addAuthor = function() {
+        		var author = {
+        				authorName:$scope.authorName
+        		};
+        		$http.post("addAuthor",author).
+        		success(function(data) {
+        			alert("Success");	
+        			modalWindow.close('close');
+        		});
+        	}
+        	
+        }]);
 
 
 lmsModule.controller('listBooksCtrl', ["$scope", "$http", "$modal", function($scope, $http, $modal) {

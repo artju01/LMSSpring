@@ -1,20 +1,12 @@
 <section data-ng-controller="listAuthorsCtrl">
 <div class="modal-header">
-	<button type="button" class="close" data-dismiss="modal"
-		aria-hidden="true">&times;</button>
-	<h4 class="modal-title">Authors</h4>
+	<button type="button" class="btn btn-success btn-sm" ng-click="addAuthor()">
+  		<span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span> Add New Author
+	</button>
 </div>
-<nav>
-	<ul class="pagination">
-		<li><a>left</a></li>
-		<li ng-repeat-start="i in range"></li>
-		<li><a href="javascript:;" ng-click="pageAuthor(i);">{{i}}</a></li>
-		<li ng-repeat-end></li>
-		<li><a>right</a></li>
-	</ul>
-</nav>
-<div class="modal-body">
 
+
+<div class="modal-body">
 	<ng-lms-search-box searchtype="Authors" maxResult=5 ng-model="searchText"></ng-lms-search-box>
     	
 	<div id="authorList">
@@ -33,7 +25,7 @@
 						<i class="fa fa-pencil-square-o"></i>
 					</a>
 				</td>
-				<td><button type="button" class="btn btn-danger btn-circle"> 
+				<td><button type="button" class="btn btn-danger btn-circle" ng-click="deleteAuthor(author);"> 
 					<i class="fa fa-remove"></i></button></td>
 			</tr>
 		</table>
@@ -41,5 +33,15 @@
 </div>
 
 
+
+<nav align="center">
+	<ul class="pagination">
+		<li><a>left</a></li>
+		<li ng-repeat-start="i in range"></li>
+		<li><a href="javascript:;" ng-click="pageAuthor(i);">{{i}}</a></li>
+		<li ng-repeat-end></li>
+		<li><a>right</a></li>
+	</ul>
+</nav>
 
 </section>

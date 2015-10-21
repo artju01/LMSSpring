@@ -27,9 +27,7 @@ public abstract class BaseDAO {
 	
 	protected String setPageLimits(String query) {
 		StringBuilder sb = new StringBuilder(query);
-		
-		sb.append("  LIMIT " + (pageNo - 1)*pageSize + "," + pageSize*pageNo);
-		
+		sb.append("  LIMIT " + (pageNo - 1)*pageSize + "," + pageSize);
 		return sb.toString();
 	}
 

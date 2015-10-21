@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gcit.jdbc.entity.Author;
@@ -27,7 +28,7 @@ import com.gcit.jdbc.service.AdministratorService;
 /**
  * Handles requests for the application home page.
  */
-@Controller
+@RestController
 public class HomeController {
 	
 	@Autowired
@@ -39,7 +40,7 @@ public class HomeController {
 	//////////////////////Author/////////////////////////////////
 	
 	@RequestMapping(value = "/addAuthor", method = RequestMethod.POST, consumes = "application/json")
-	public @ResponseBody String addAuthor(@RequestBody Author author,
+	public  String addAuthor(@RequestBody Author author,
 			Locale locale, Model model) {
 		try {
 			adminService.addAuthor(author);
@@ -51,9 +52,10 @@ public class HomeController {
 	}
 	
 	@RequestMapping(value = "/editAuthor", method = RequestMethod.POST , consumes = "application/json")
-	public @ResponseBody String editAuthor(@RequestBody Author author,
+	public String editAuthor(@RequestBody Author author,
 			Locale locale, Model model) {
 		try {
+			System.out.println(author);
 			adminService.updateAuthor(author);
 			ObjectMapper mapper = new ObjectMapper();
 			return mapper.writeValueAsString("Edit Author successfully");
@@ -78,17 +80,15 @@ public class HomeController {
 	
 	@RequestMapping(value = "/listAuthors/{pageNo}", method = {
 			RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
-	public @ResponseBody String listAuthors(
+	public  List<Author> listAuthors(
 			@PathVariable(value = "pageNo") Integer pageNo) {
 		try {
 			if (pageNo == null)
 				pageNo = 1;
-			List<Author> authors = adminService.getAllAuthors(pageNo);
-			ObjectMapper mapper = new ObjectMapper();
-			return mapper.writeValueAsString(authors);
+			return adminService.getAllAuthors(pageNo);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return "Authors get failed. Reason: " + e.getMessage();
+			return null;
 		}
 	}
 	
