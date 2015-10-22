@@ -1,0 +1,17 @@
+<section data-ng-controller="deleteBranchCtrl">
+	<div class="modal-header">
+		<button type="button" class="close" ng-click="cancel()" data-dismiss="modal"
+			aria-hidden="true">&times;</button>
+		<h4 class="modal-title">Delete Branch</h4>
+	</div>
+	<div class="modal-body">
+		<h4>Do you want to delete this branch?</h4>
+		<h5 ng-model="branchName" /></h5>
+	</div>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-default" data-dismiss="modal" ng-click="cancel()">Close</button>
+		<button type="button" class="btn btn-primary"
+			ng-click="deleteBranch();">Save changes</button>
+	</div>
+
+</section>

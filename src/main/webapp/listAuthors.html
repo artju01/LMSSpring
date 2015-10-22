@@ -1,8 +1,9 @@
 <section data-ng-controller="listAuthorsCtrl">
 <div class="modal-header">
-	<button type="button" class="btn btn-success btn-sm" ng-click="addAuthor()">
+	<button type="button" class="btn btn-success btn-sm pull-right" ng-click="addAuthor()">
   		<span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span> Add New Author
 	</button>
+	<h4 class="modal-title">Author</h4>
 </div>
 
 
@@ -12,20 +13,20 @@
 	<div id="authorList">
 	  	<table class="table">
 			<tr>
-				<th>Id</th>	
-				<th>Name</th>
-				<th>Edit</th>
-				<th>Delete</th>
+				<th style="text-align:center">Id</th>	
+				<th style="text-align:center">Name</th>
+				<th style="text-align:center">Edit</th>
+				<th style="text-align:center">Delete</th>
 			</tr>
 			<tr ng-repeat="author in authors">
-				<td>{{author.authorId}}</td>
-				<td>{{author.authorName}}</td>
-				<td>
+				<td style="text-align:center">{{author.authorId}}</td>
+				<td style="text-align:center">{{author.authorName}}</td>
+				<td style="text-align:center">
 					<a href="javascript:;" ng-click="editAuthor(author);" data-target="#myModal1" data-toggle="modal">
 						<i class="fa fa-pencil-square-o"></i>
 					</a>
 				</td>
-				<td><button type="button" class="btn btn-danger btn-circle" ng-click="deleteAuthor(author);"> 
+				<td style="text-align:center"><button type="button" class="btn btn-danger btn-circle" ng-click="deleteAuthor(author);"> 
 					<i class="fa fa-remove"></i></button></td>
 			</tr>
 		</table>

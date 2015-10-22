@@ -1,10 +1,39 @@
 <section data-ng-controller="listBranchesCtrl">
 <div class="modal-header">
-	<button type="button" class="close" data-dismiss="modal"
-		aria-hidden="true">&times;</button>
-	<h4 class="modal-title">Brnaches</h4>
+	<button type="button" class="btn btn-success btn-sm pull-right" ng-click="addBranch()">
+  		<span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span> Add New Library Branch
+	</button>
+	<h4 class="modal-title">Library Branch</h4>
 </div>
-<nav>
+
+<div class="modal-body">
+
+	<ng-lms-search-box searchtype="Branches" maxResult=5 ng-model="searchText"></ng-lms-search-box>
+    	
+	<div id="branchList">
+	  	<table class="table">
+			<tr>
+				<th style="text-align:center">Name</th>
+				<th style="text-align:center">Address</th>
+				<th style="text-align:center">Edit</th>
+				<th style="text-align:center">Delete</th>
+			</tr>
+			<tr ng-repeat="branch in branches">
+				<td style="text-align:center">{{branch.name}}</td>
+				<td style="text-align:center">{{branch.address}}</td>
+				<td style="text-align:center">
+					<a href="javascript:;" ng-click="editBranch(branch);" data-target="#myModal1" data-toggle="modal">
+						<i class="fa fa-pencil-square-o"></i>
+					</a>
+				</td>
+				<td style="text-align:center"><button type="button" class="btn btn-danger btn-circle" ng-click="deleteBranch(branch);"> 
+					<i class="fa fa-remove"></i></button></td>
+			</tr>
+		</table>
+	</div>
+</div>
+
+<nav align="center">
 	<ul class="pagination">
 		<li><a>left</a></li>
 		<li ng-repeat-start="i in range"></li>
@@ -13,33 +42,5 @@
 		<li><a>right</a></li>
 	</ul>
 </nav>
-<div class="modal-body">
-
-	<ng-lms-search-box searchtype="Branch" maxResult=5 ng-model="searchText"></ng-lms-search-box>
-    	
-	<div id="authorList">
-	  	<table class="table">
-			<tr>
-				<th>Name</th>
-				<th>Address</th>
-				<th>Edit</th>
-				<th>Delete</th>
-			</tr>
-			<tr ng-repeat="branch in branches">
-				<td>{{branch.name}}</td>
-				<td>{{branch.address}}</td>
-				<td>
-					<a href="javascript:;" ng-click="editAuthor(author);" data-target="#myModal1" data-toggle="modal">
-						<i class="fa fa-pencil-square-o"></i>
-					</a>
-				</td>
-				<td><button type="button" class="btn btn-danger btn-circle"> 
-					<i class="fa fa-remove"></i></button></td>
-			</tr>
-		</table>
-	</div>
-</div>
-
-
 
 </section>

@@ -40,16 +40,32 @@ lmsModule.directive('ngLmsSearchBox', ['$http', function($http) {
 				    			});
 		            	}		        				        
 		            });
-	    	  	} else if (scope.searchtype == "Publishers") {
-	    	  		//bind method for publishers
+	    	  	} else if (scope.searchtype == "Branches") {
+	    	  		element.bind('keyup', function () {	
+		            	if (!scope.ngModel) {
+		            		$http.post("listBranches/"+currentPage).
+		    				success(function(data) {
+		    					scope.$emit('notification', data);
+		    				});
+		            	}
+		            	else {
+		            		$http({
+					  			  method: "POST",
+								  url: "searchBranchesWithPage/"+currentPage+"/"+scope.ngModel
+				        		}).success(function(data) {
+				        			scope.$emit('notification', data);	        	
+				    			});
+		            	}		        				        
+		            });
 	    	  	}
 	        }
 	  };
 	}]);
 
 
-lmsModule.service('sharedAuthor', function(){
+lmsModule.service('sharedData', function(){
 	var author;
+	//var branch;
 	
 	return {
 		getAuthor: function () {
@@ -87,8 +103,8 @@ lmsModule.controller('homeCtrl', ["$scope", "$http", "$modal", function($scope, 
 	};
 }]);
 
-lmsModule.controller('listAuthorsCtrl', ["$scope", "$http", "$modal", "$rootScope" ,"sharedAuthor",      
-                                         function($scope, $http, $modal, sharedAuthor, $rootScope) {
+lmsModule.controller('listAuthorsCtrl', ["$scope", "$http", "$modal", "$rootScope" ,"sharedData",      
+                                         function($scope, $http, $modal, sharedData, $rootScope) {
 	$http.post("countAuthors").
 		success(function(data) {
 			var range = [];
@@ -106,8 +122,7 @@ lmsModule.controller('listAuthorsCtrl', ["$scope", "$http", "$modal", "$rootScop
 		$http.post("listAuthors/"+currentPage).
 		success(function(data) {
 			$scope.authors = data;
-		});
-		
+		});	
 	}
 	
 	$scope.$on('notification', function (evt, data) {
@@ -120,7 +135,7 @@ lmsModule.controller('listAuthorsCtrl', ["$scope", "$http", "$modal", "$rootScop
 	}
 	
 	$scope.editAuthor = function(author) {
-		//sharedAuthor.setAuthor(author)
+		//sharedData.setAuthor(author)
 		$rootScope.author = author;
 		editModalWindow = $modal.open({
 			templateUrl: "editAuthorModal.html",
@@ -142,10 +157,14 @@ lmsModule.controller('listAuthorsCtrl', ["$scope", "$http", "$modal", "$rootScop
 			success(function(data) {
 				var range = [];
 				var maxPage = Math.ceil(data/10);
-				currentPage = maxPage;
 				for(var i=1;(i<=maxPage);i++) {
 				  range.push(i);
 				}
+				
+				if (currentPage > maxPage) {
+					currentPage = maxPage
+				}
+				
 				$scope.range = range;
 				$scope.reloadData();
 			});
@@ -176,16 +195,12 @@ lmsModule.controller('listAuthorsCtrl', ["$scope", "$http", "$modal", "$rootScop
 	
 }]);
 
-
-
-
-
-//we can use either service(sharedAuthor) or $rootScope  
+//we can use either service(sharedData) or $rootScope  
 //if we use service, we need to create services for each data.
 //for rootScope, we don't need to write service. (reduce line of code)
 
-lmsModule.controller('editAuthorCtrl', ["$scope", "$http", "$modal","$rootScope", "sharedAuthor", 
-                                        function($scope, $http, $modal,sharedAuthor, $rootScope) {
+lmsModule.controller('editAuthorCtrl', ["$scope", "$http", "$modal","$rootScope", "sharedData", 
+                                        function($scope, $http, $modal,sharedData, $rootScope) {
 	console.log($rootScope);
 	$scope.authorName = $rootScope.author.authorName;
 	$scope.cancel = function() {
@@ -203,8 +218,8 @@ lmsModule.controller('editAuthorCtrl', ["$scope", "$http", "$modal","$rootScope"
 	
 }]);
 
-lmsModule.controller('deleteAuthorCtrl', ["$scope", "$http", "$modal","$rootScope", "sharedAuthor", 
-                                          function($scope, $http, $modal,sharedAuthor, $rootScope) {
+lmsModule.controller('deleteAuthorCtrl', ["$scope", "$http", "$modal","$rootScope", "sharedData", 
+                                          function($scope, $http, $modal,sharedData, $rootScope) {
   	console.log($rootScope);
   	$scope.cancel = function() {
   		deleteModalWindow.close('close');
@@ -238,8 +253,162 @@ lmsModule.controller('addAuthorCtrl', ["$scope", "$http",
         		});
         	}
         	
-        }]);
+}]);
 
+
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////BRANCHES////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+lmsModule.controller('listBranchesCtrl', ["$scope", "$http", "$modal", "$rootScope",
+                                          function($scope, $http, $modal, $rootScope) {
+	$http.post("countBranches").
+		success(function(data) {
+			var range = [];
+			for(var i=1;(i<=data/10);i++) {
+			  range.push(i);
+			}
+			$scope.range = range;
+
+			$http.post("listBranches/1").
+				success(function(data) {
+					$scope.branches = data;				
+				});
+		});
+	
+	$scope.reloadData = function () {
+		$http.post("listBranches/"+currentPage).
+		success(function(data) {
+			$scope.branches = data;
+		});	
+	}
+	
+	$scope.$on('notification', function (evt, data) {
+        $scope.branches = data;
+    });
+	
+	$scope.pageBranches = function(pgNo) {
+		currentPage = pgNo;
+		$scope.reloadData();
+	}
+	
+	$scope.addBranch = function() {
+		modalWindow = $modal.open({
+			templateUrl: "addBranchModal.html",
+			controller: "addBranchCtrl"
+		});
+		
+		modalWindow.result.then(function () {
+			$http.post("countBranches").
+			success(function(data) {
+				var range = [];
+				var maxPage = Math.ceil(data/10);
+				currentPage = maxPage;
+				for(var i=1;(i<=maxPage);i++) {
+				  range.push(i);
+				}
+				$scope.range = range;
+				$scope.reloadData();
+			});
+		});
+	}
+	
+	$scope.editBranch = function(branch) {
+		$rootScope.branch = branch;
+		editModalWindow = $modal.open({
+			templateUrl: "editBranchModal.html",
+			controller: "editBranchCtrl"
+		});
+		
+	}
+	
+	$scope.deleteBranch = function(branch) {
+		$rootScope.branch = branch;
+		deleteModalWindow = $modal.open({
+			templateUrl: "deleteBranchModal.html",
+			controller: "deleteBranchCtrl"
+		});
+		
+		deleteModalWindow.result.then(function () {
+			$http.post("countBranches").
+			success(function(data) {
+				var range = [];
+				var maxPage = Math.ceil(data/10);
+				for(var i=1;(i<=maxPage);i++) {
+				  range.push(i);
+				}
+				
+				if (currentPage > maxPage) {
+					currentPage = maxPage
+				}
+				
+				$scope.range = range;
+				$scope.reloadData();
+			});
+		});
+	}
+}]);
+
+lmsModule.controller('addBranchCtrl', ["$scope", "$http", 
+                                       function($scope, $http) {
+        	
+        	$scope.cancel = function() {
+        		modalWindow.close('close');
+        	};
+        	
+        	$scope.addBranch = function() {
+        		var branch = {
+        				name:$scope.branchName,
+        				address:$scope.branchAddress
+        		};
+        		$http.post("addBranch",branch).
+        		success(function(data) {
+        			alert("Success");	
+        			modalWindow.close('close');
+        		});
+        	}
+        	
+}]);
+
+lmsModule.controller('editBranchCtrl', ["$scope", "$http", "$modal","$rootScope", 
+                                        function($scope, $http, $modal, $rootScope) {
+	$scope.branchName = $rootScope.branch.name;
+	$scope.branchAddress = $rootScope.branch.address;
+	$scope.cancel = function() {
+		editModalWindow.close('close');
+	};
+	
+	$scope.updateBranch = function() {
+		$rootScope.branch.name = $scope.branchName;
+		$rootScope.branch.address =  $scope.branchAddress;
+		$http.post("editBranch",$rootScope.branch).
+		success(function(data) {
+			alert("Success");	
+			editModalWindow.close('close');
+		});
+	}
+	
+	
+}]);
+
+lmsModule.controller('deleteBranchCtrl', ["$scope", "$http", "$modal","$rootScope", 
+                                          function($scope, $http, $modal, $rootScope) {
+  	$scope.cancel = function() {
+  		deleteModalWindow.close('close');
+  	};
+  	
+  	$scope.deleteBranch = function() {
+  		$http.post("deleteBranch",$rootScope.branch).
+  		success(function(data) {
+  			alert("Success");	
+  			deleteModalWindow.close('close');
+  		});
+  	}
+  	
+  }]);
+
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////Book////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
 
 lmsModule.controller('listBooksCtrl', ["$scope", "$http", "$modal", function($scope, $http, $modal) {
 	$http.post("countBooks").
@@ -293,29 +462,4 @@ lmsModule.controller('listPublishersCtrl', ["$scope", "$http", "$modal", functio
 	
 }]);
 
-lmsModule.controller('listBranchesCtrl', ["$scope", "$http", "$modal", function($scope, $http, $modal) {
-	$http.post("countBranches").
-		success(function(data) {
-			var range = [];
-			for(var i=1;(i<=data/10);i++) {
-			  range.push(i);
-			}
-			$scope.range = range;
-
-			$http.post("listBranches/1").
-				success(function(data) {
-					$scope.branches = data;				
-				});
-		});
-	
-	$scope.pageBranches = function(pgNo) {
-		$http({
-		    method: "POST",
-		    url: "listBranches/"+pgNo
-		}).success(function(data) {
-				$scope.branches = data;
-			});
-	}
-	
-}]);
 
