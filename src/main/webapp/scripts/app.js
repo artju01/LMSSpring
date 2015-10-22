@@ -57,6 +57,40 @@ lmsModule.directive('ngLmsSearchBox', ['$http', function($http) {
 				    			});
 		            	}		        				        
 		            });
+	    	  	} else if (scope.searchtype == "Publishers") {
+	    	  		element.bind('keyup', function () {	
+		            	if (!scope.ngModel) {
+		            		$http.post("listPublishers/"+currentPage).
+		    				success(function(data) {
+		    					scope.$emit('notification', data);
+		    				});
+		            	}
+		            	else {
+		            		$http({
+					  			  method: "POST",
+								  url: "searchPublishersWithPage/"+currentPage+"/"+scope.ngModel
+				        		}).success(function(data) {
+				        			scope.$emit('notification', data);	        	
+				    			});
+		            	}		        				        
+		            });
+	    	  	} else if (scope.searchtype == "Borrowers") {
+	    	  		element.bind('keyup', function () {	
+		            	if (!scope.ngModel) {
+		            		$http.post("listBorrowers/"+currentPage).
+		    				success(function(data) {
+		    					scope.$emit('notification', data);
+		    				});
+		            	}
+		            	else {
+		            		$http({
+					  			  method: "POST",
+								  url: "searchBorrowersWithPage/"+currentPage+"/"+scope.ngModel
+				        		}).success(function(data) {
+				        			scope.$emit('notification', data);	        	
+				    			});
+		            	}		        				        
+		            });
 	    	  	}
 	        }
 	  };
@@ -90,6 +124,8 @@ lmsModule.config([ "$routeProvider", function($routeProvider) {
 		templateUrl : "listPublishers.html"
 	}).when("/listBranches", {
 		templateUrl : "listBranches.html"
+	}).when("/listBorrowers", {
+		templateUrl : "listBorrowers.html"
 	})
 } ]);
 
@@ -264,7 +300,8 @@ lmsModule.controller('listBranchesCtrl', ["$scope", "$http", "$modal", "$rootSco
 	$http.post("countBranches").
 		success(function(data) {
 			var range = [];
-			for(var i=1;(i<=data/10);i++) {
+			var maxPage = Math.ceil(data/10);
+			for(var i=1;(i<=maxPage);i++) {
 			  range.push(i);
 			}
 			$scope.range = range;
@@ -349,8 +386,7 @@ lmsModule.controller('listBranchesCtrl', ["$scope", "$http", "$modal", "$rootSco
 }]);
 
 lmsModule.controller('addBranchCtrl', ["$scope", "$http", 
-                                       function($scope, $http) {
-        	
+                                       function($scope, $http) {    
         	$scope.cancel = function() {
         		modalWindow.close('close');
         	};
@@ -414,7 +450,8 @@ lmsModule.controller('listPublishersCtrl', ["$scope", "$http", "$modal", "$rootS
 	$http.post("countPublishers").
 		success(function(data) {
 			var range = [];
-			for(var i=1;(i<=data/10);i++) {
+			var maxPage = Math.ceil(data/10);
+			for(var i=1;(i<=maxPage);i++) {
 			  range.push(i);
 			}
 			$scope.range = range;
@@ -560,6 +597,159 @@ lmsModule.controller('deletePublisherCtrl', ["$scope", "$http", "$modal","$rootS
   	
   }]);
 
+
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////Borrower///////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+
+lmsModule.controller('listBorrowersCtrl', ["$scope", "$http", "$modal", "$rootScope", function($scope, $http, $modal, $rootScope) {
+	$http.post("countBorrowers").
+	success(function(data) {
+		var range = [];
+		var maxPage = Math.ceil(data/10);
+		for(var i=1;(i<=maxPage);i++) {
+			range.push(i);
+		}
+		$scope.range = range;
+
+		$http.post("listBorrowers/1").
+		success(function(data) {
+			$scope.borrowers = data;				
+		});
+	});
+
+	$scope.pageBorrowers = function(pgNo) {
+		currentPage = pgNo;
+		$scope.reloadData();
+	}
+
+	$scope.$on('notification', function (evt, data) {
+		$scope.borrowers = data;
+	});
+
+	$scope.reloadData = function () {
+		$http.post("listBorrowers/"+currentPage).
+		success(function(data) {
+			$scope.borrowers = data;
+		});	
+	}
+
+	$scope.addBorrower = function() {
+		modalWindow = $modal.open({
+			templateUrl: "addBorrowerModal.html",
+			controller: "addBorrowerCtrl"
+		});
+
+		modalWindow.result.then(function () {
+			$http.post("countBorrowers").
+			success(function(data) {
+				var range = [];
+				var maxPage = Math.ceil(data/10);
+				currentPage = maxPage;
+				for(var i=1;(i<=maxPage);i++) {
+					range.push(i);
+				}
+				$scope.range = range;
+				$scope.reloadData();
+			});
+		});
+	}
+
+	$scope.editBorrower = function(borrower) {
+		$rootScope.borrower = borrower;
+		editModalWindow = $modal.open({
+			templateUrl: "editBorrowerModal.html",
+			controller: "editBorrowerCtrl"
+		});
+
+	}
+
+	$scope.deleteBorrower = function(borrower) {
+		$rootScope.borrower = borrower;
+		deleteModalWindow = $modal.open({
+			templateUrl: "deleteBorrowerModal.html",
+			controller: "deleteBorrowerCtrl"
+		});
+
+		deleteModalWindow.result.then(function () {
+			$http.post("countBorrowers").
+			success(function(data) {
+				var range = [];
+				var maxPage = Math.ceil(data/10);
+				for(var i=1;(i<=maxPage);i++) {
+					range.push(i);
+				}
+
+				if (currentPage > maxPage) {
+					currentPage = maxPage
+				}
+
+				$scope.range = range;
+				$scope.reloadData();
+			});
+		});
+	}
+
+}]);
+
+lmsModule.controller('addBorrowerCtrl', ["$scope", "$http", 
+                                          function($scope, $http) {
+           	
+           	$scope.cancel = function() {
+           		modalWindow.close('close');
+           	};
+           	
+           	$scope.addBorrower = function() {
+           		var borrower = {
+           				name:$scope.name,
+           				address:$scope.address,
+           				phone:$scope.phone
+           		};
+           		$http.post("addBorrower",borrower).
+           		success(function(data) {
+           			alert("Success");	
+           			modalWindow.close('close');
+           		});
+           	}
+           	
+   }]);
+
+lmsModule.controller('editBorrowerCtrl', ["$scope", "$http", "$modal","$rootScope", 
+                                           function($scope, $http, $modal, $rootScope) {
+   	$scope.name = $rootScope.borrower.name;
+   	$scope.address = $rootScope.borrower.address;
+   	$scope.phone = $rootScope.borrower.phone;
+   	$scope.cancel = function() {
+   		editModalWindow.close('close');
+   	};
+   	
+   	$scope.updateBorrower = function() {
+   		$rootScope.borrower.name = $scope.name;
+   		$rootScope.borrower.address =  $scope.address;
+   		$rootScope.borrower.phone =  $scope.phone;
+   		$http.post("editBorrower",$rootScope.borrower).
+   		success(function(data) {
+   			alert("Success");	
+   			editModalWindow.close('close');
+   		});
+   	}
+}]);
+
+lmsModule.controller('deleteBorrowerCtrl', ["$scope", "$http", "$modal","$rootScope", 
+                                             function($scope, $http, $modal, $rootScope) {
+     	$scope.cancel = function() {
+     		deleteModalWindow.close('close');
+     	};
+     	
+     	$scope.deleteBorrower = function() {
+     		$http.post("deleteBorrower",$rootScope.borrower).
+     		success(function(data) {
+     			alert("Success");	
+     			deleteModalWindow.close('close');
+     		});
+     	}
+     	
+}]);
 
 ///////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////Book////////////////////////////////////////////////
