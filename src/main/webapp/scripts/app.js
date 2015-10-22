@@ -407,36 +407,10 @@ lmsModule.controller('deleteBranchCtrl', ["$scope", "$http", "$modal","$rootScop
   }]);
 
 ///////////////////////////////////////////////////////////////////////////////////
-///////////////////////////Book////////////////////////////////////////////////
+///////////////////////////Publisher///////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////
 
-lmsModule.controller('listBooksCtrl', ["$scope", "$http", "$modal", function($scope, $http, $modal) {
-	$http.post("countBooks").
-		success(function(data) {
-			var range = [];
-			for(var i=1;(i<=data/10);i++) {
-			  range.push(i);
-			}
-			$scope.range = range;
-
-			$http.post("listBooks/1").
-				success(function(data) {
-					$scope.books = data;					
-				});
-		});
-	
-	$scope.pageBook = function(pgNo) {
-		$http({
-		    method: "POST",
-		    url: "listBooks/"+pgNo
-		}).success(function(data) {
-				$scope.books = data;
-			});
-	}
-	
-}]);
-
-lmsModule.controller('listPublishersCtrl', ["$scope", "$http", "$modal", function($scope, $http, $modal) {
+lmsModule.controller('listPublishersCtrl', ["$scope", "$http", "$modal", "$rootScope", function($scope, $http, $modal, $rootScope) {
 	$http.post("countPublishers").
 		success(function(data) {
 			var range = [];
@@ -451,15 +425,170 @@ lmsModule.controller('listPublishersCtrl', ["$scope", "$http", "$modal", functio
 				});
 		});
 	
-	$scope.pageBook = function(pgNo) {
-		$http({
-		    method: "POST",
-		    url: "listPublishers/"+pgNo
-		}).success(function(data) {
-				$scope.publishers = data;
-			});
+	$scope.pagePublisher = function(pgNo) {
+		currentPage = pgNo;
+		$scope.reloadData();
 	}
 	
+	$scope.$on('notification', function (evt, data) {
+        $scope.publishers = data;
+    });
+	
+	$scope.reloadData = function () {
+		$http.post("listPublishers/"+currentPage).
+		success(function(data) {
+			$scope.publishers = data;
+		});	
+	}
+	
+	$scope.addPublisher = function() {
+		modalWindow = $modal.open({
+			templateUrl: "addPublisherModal.html",
+			controller: "addPublisherCtrl"
+		});
+		
+		modalWindow.result.then(function () {
+			$http.post("countPublishers").
+			success(function(data) {
+				var range = [];
+				var maxPage = Math.ceil(data/10);
+				currentPage = maxPage;
+				for(var i=1;(i<=maxPage);i++) {
+				  range.push(i);
+				}
+				$scope.range = range;
+				$scope.reloadData();
+			});
+		});
+	}
+	
+	$scope.editPublisher = function(pub) {
+		$rootScope.publisher = pub;
+		editModalWindow = $modal.open({
+			templateUrl: "editPublisherModal.html",
+			controller: "editPublisherCtrl"
+		});
+		
+	}
+	
+	$scope.deletePublisher = function(pub) {
+		$rootScope.publisher = pub;
+		deleteModalWindow = $modal.open({
+			templateUrl: "deletePublisherModal.html",
+			controller: "deletePublisherCtrl"
+		});
+		
+		deleteModalWindow.result.then(function () {
+			$http.post("countPublishers").
+			success(function(data) {
+				var range = [];
+				var maxPage = Math.ceil(data/10);
+				for(var i=1;(i<=maxPage);i++) {
+				  range.push(i);
+				}
+				
+				if (currentPage > maxPage) {
+					currentPage = maxPage
+				}
+				
+				$scope.range = range;
+				$scope.reloadData();
+			});
+		});
+	}
+	
+}]);
+
+lmsModule.controller('addPublisherCtrl', ["$scope", "$http", 
+                                       function($scope, $http) {
+        	
+        	$scope.cancel = function() {
+        		modalWindow.close('close');
+        	};
+        	
+        	$scope.addPublisher = function() {
+        		var publisher = {
+        				publisherName:$scope.publisherName,
+        				address:$scope.address,
+        				phone:$scope.phone
+        		};
+        		$http.post("addPublisher",publisher).
+        		success(function(data) {
+        			alert("Success");	
+        			modalWindow.close('close');
+        		});
+        	}
+        	
+}]);
+
+lmsModule.controller('editPublisherCtrl', ["$scope", "$http", "$modal","$rootScope", 
+                                        function($scope, $http, $modal, $rootScope) {
+	$scope.publisherName = $rootScope.publisher.publisherName;
+	$scope.address = $rootScope.publisher.address;
+	$scope.phone = $rootScope.publisher.phone;
+	$scope.cancel = function() {
+		editModalWindow.close('close');
+	};
+	
+	$scope.updatePublisher = function() {
+		$rootScope.publisher.publisherName = $scope.publisherName;
+		$rootScope.publisher.address =  $scope.address;
+		$rootScope.publisher.phone =  $scope.phone;
+		$http.post("editPublisher",$rootScope.publisher).
+		success(function(data) {
+			alert("Success");	
+			editModalWindow.close('close');
+		});
+	}
+	
+	
+}]);
+
+lmsModule.controller('deletePublisherCtrl', ["$scope", "$http", "$modal","$rootScope", 
+                                          function($scope, $http, $modal, $rootScope) {
+  	$scope.cancel = function() {
+  		deleteModalWindow.close('close');
+  	};
+  	
+  	$scope.deletePublisher = function() {
+  		$http.post("deletePublisher",$rootScope.publisher).
+  		success(function(data) {
+  			alert("Success");	
+  			deleteModalWindow.close('close');
+  		});
+  	}
+  	
+  }]);
+
+
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////Book////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+
+lmsModule.controller('listBooksCtrl', ["$scope", "$http", "$modal", function($scope, $http, $modal) {
+	$http.post("countBooks").
+	success(function(data) {
+		var range = [];
+		for(var i=1;(i<=data/10);i++) {
+			range.push(i);
+		}
+		$scope.range = range;
+
+		$http.post("listBooks/1").
+		success(function(data) {
+			$scope.books = data;					
+		});
+	});
+
+	$scope.pageBook = function(pgNo) {
+		$http({
+			method: "POST",
+			url: "listBooks/"+pgNo
+		}).success(function(data) {
+			$scope.books = data;
+		});
+	}
+
 }]);
 
 
