@@ -40,7 +40,26 @@ lmsModule.directive('ngLmsSearchBox', ['$http', function($http) {
 				    			});
 		            	}		        				        
 		            });
-	    	  	} else if (scope.searchtype == "Branches") {
+	    	  	} 
+	    	  	else if(scope.searchtype == "AuthorsAll") {		    	
+		            element.bind('keyup', function () {			           
+		            	if (!scope.ngModel) {
+		            		$http.post("listAuthors/-1").
+		    				success(function(data) {
+		    					scope.$emit('notificationAuthor', data);
+		    				});
+		            	}
+		            	else {
+		            		$http({
+					  			  method: "POST",
+								  url: "searchAuthorsWithPage/-1/"+scope.ngModel
+				        		}).success(function(data) {			        	
+				        			scope.$emit('notificationAuthor', data);	        	
+				    			});
+		            	}		        				        
+		            });
+	    	  	} 
+	    	  	else if (scope.searchtype == "Branches") {
 	    	  		element.bind('keyup', function () {	
 		            	if (!scope.ngModel) {
 		            		$http.post("listBranches/"+currentPage).
@@ -57,7 +76,8 @@ lmsModule.directive('ngLmsSearchBox', ['$http', function($http) {
 				    			});
 		            	}		        				        
 		            });
-	    	  	} else if (scope.searchtype == "Publishers") {
+	    	  	} 
+	    	  	else if (scope.searchtype == "Publishers") {
 	    	  		element.bind('keyup', function () {	
 		            	if (!scope.ngModel) {
 		            		$http.post("listPublishers/"+currentPage).
@@ -74,7 +94,26 @@ lmsModule.directive('ngLmsSearchBox', ['$http', function($http) {
 				    			});
 		            	}		        				        
 		            });
-	    	  	} else if (scope.searchtype == "Borrowers") {
+	    	  	} 
+	    	  	else if(scope.searchtype == "PublishersAll") {		    	
+		            element.bind('keyup', function () {			           
+		            	if (!scope.ngModel) {
+		            		$http.post("listPublishers/-1").
+		    				success(function(data) {
+		    					scope.$emit('notificationPublisher', data);
+		    				});
+		            	}
+		            	else {
+		            		$http({
+					  			  method: "POST",
+								  url: "searchPublishers/"+scope.ngModel
+				        		}).success(function(data) {			        	
+				        			scope.$emit('notificationPublisher', data);	        	
+				    			});
+		            	}		        				        
+		            });
+	    	  	} 
+	    	  	else if (scope.searchtype == "Borrowers") {
 	    	  		element.bind('keyup', function () {	
 		            	if (!scope.ngModel) {
 		            		$http.post("listBorrowers/"+currentPage).
@@ -86,6 +125,24 @@ lmsModule.directive('ngLmsSearchBox', ['$http', function($http) {
 		            		$http({
 					  			  method: "POST",
 								  url: "searchBorrowersWithPage/"+currentPage+"/"+scope.ngModel
+				        		}).success(function(data) {
+				        			scope.$emit('notification', data);	        	
+				    			});
+		            	}		        				        
+		            });
+	    	  	} 
+	    	  	else if (scope.searchtype == "Books") {
+	    	  		element.bind('keyup', function () {	
+		            	if (!scope.ngModel) {
+		            		$http.post("listBooks/"+currentPage).
+		    				success(function(data) {
+		    					scope.$emit('notification', data);
+		    				});
+		            	}
+		            	else {
+		            		$http({
+					  			  method: "POST",
+								  url: "searchBooksWithPage/"+currentPage+"/"+scope.ngModel
 				        		}).success(function(data) {
 				        			scope.$emit('notification', data);	        	
 				    			});
@@ -693,26 +750,26 @@ lmsModule.controller('listBorrowersCtrl', ["$scope", "$http", "$modal", "$rootSc
 }]);
 
 lmsModule.controller('addBorrowerCtrl', ["$scope", "$http", 
-                                          function($scope, $http) {
-           	
-           	$scope.cancel = function() {
-           		modalWindow.close('close');
-           	};
-           	
-           	$scope.addBorrower = function() {
-           		var borrower = {
-           				name:$scope.name,
-           				address:$scope.address,
-           				phone:$scope.phone
-           		};
-           		$http.post("addBorrower",borrower).
-           		success(function(data) {
-           			alert("Success");	
-           			modalWindow.close('close');
-           		});
-           	}
-           	
-   }]);
+                                         function($scope, $http) {
+
+	$scope.cancel = function() {
+		modalWindow.close('close');
+	};
+
+	$scope.addBorrower = function() {
+		var borrower = {
+				name:$scope.name,
+				address:$scope.address,
+				phone:$scope.phone
+		};
+		$http.post("addBorrower",borrower).
+		success(function(data) {
+			alert("Success");	
+			modalWindow.close('close');
+		});
+	}
+
+}]);
 
 lmsModule.controller('editBorrowerCtrl', ["$scope", "$http", "$modal","$rootScope", 
                                            function($scope, $http, $modal, $rootScope) {
@@ -755,11 +812,12 @@ lmsModule.controller('deleteBorrowerCtrl', ["$scope", "$http", "$modal","$rootSc
 ///////////////////////////Book////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////
 
-lmsModule.controller('listBooksCtrl', ["$scope", "$http", "$modal", function($scope, $http, $modal) {
+lmsModule.controller('listBooksCtrl', ["$scope", "$http", "$modal", "$rootScope", function($scope, $http, $modal, $rootScope) {
 	$http.post("countBooks").
 	success(function(data) {
 		var range = [];
-		for(var i=1;(i<=data/10);i++) {
+		var max = Math.ceil(data/10)
+		for(var i=1;(i<=max);i++) {
 			range.push(i);
 		}
 		$scope.range = range;
@@ -770,15 +828,393 @@ lmsModule.controller('listBooksCtrl', ["$scope", "$http", "$modal", function($sc
 		});
 	});
 
+	$scope.$on('notification', function (evt, data) {
+        $scope.books = data;
+    });
+	
 	$scope.pageBook = function(pgNo) {
-		$http({
-			method: "POST",
-			url: "listBooks/"+pgNo
-		}).success(function(data) {
+		currentPage = pgNo;
+		$scope.reloadData();
+	}
+	
+	$scope.reloadData = function () {
+		$http.post("listBooks/"+currentPage).
+		success(function(data) {
 			$scope.books = data;
+		});	
+	}
+	
+	$scope.addBook = function() {
+		modalWindow = $modal.open({
+			templateUrl: "addBookModal.html",
+			controller: "addBookCtrl"
+		});
+
+		modalWindow.result.then(function () {
+			$http.post("countBooks").
+			success(function(data) {
+				var range = [];
+				var maxPage = Math.ceil(data/10);
+				currentPage = maxPage;
+				for(var i=1;(i<=maxPage);i++) {
+					range.push(i);
+				}
+				$scope.range = range;
+				$scope.reloadData();
+			});
+		});
+	}
+
+	$scope.editBook = function(book) {
+		$rootScope.book = book;
+		editModalWindow = $modal.open({
+			templateUrl: "editBookModal.html",
+			controller: "editBookCtrl"
+		});
+
+	}
+
+	$scope.deleteBook = function(book) {
+		$rootScope.book = book;
+		deleteModalWindow = $modal.open({
+			templateUrl: "deleteBookModal.html",
+			controller: "deleteBookCtrl"
+		});
+
+		deleteModalWindow.result.then(function () {
+			$http.post("countBooks").
+			success(function(data) {
+				var range = [];
+				var maxPage = Math.ceil(data/10);
+				for(var i=1;(i<=maxPage);i++) {
+					range.push(i);
+				}
+
+				if (currentPage > maxPage) {
+					currentPage = maxPage
+				}
+
+				$scope.range = range;
+				$scope.reloadData();
+			});
 		});
 	}
 
 }]);
 
+lmsModule.controller('addBookCtrl', ["$scope", "$http", 
+                                     function($scope, $http) {
+	
+	$http.post("listGenres").
+	success(function(data) {
+		$scope.genres = data;	
+		$scope.selectedGenres = [];
+	});
+	
+	$http.post("listPublishers/-1").
+	success(function(data) {
+		$scope.publishers = data;	
+	});
+	
+	$http.post("listAuthors/-1").
+	success(function(data) {
+		$scope.authors = data;
+		$scope.selectedAuthors = [];
+	});
+	
+	$scope.$on('notificationAuthor', function (evt, data) {
+        $scope.authors = data;
+    });
+	
+	$scope.selectMoveGenre = function (select1, select2) {
+		var gen;
+		for (var i=select1.length-1; i>=0; i--) {
+			angular.forEach($scope.genres, function(value, key){
+				if (value.genreId == select1[i]) {
+					gen = value;
+					var isDuplicate = false;
+					angular.forEach($scope.selectedGenres, function(value2, key2){
+						if (value2.genreId == gen.genreId) {
+							isDuplicate = true;
+						}
+					});
+					
+					if (isDuplicate == false) {
+						$scope.selectedGenres.push(gen);
+					}
+				}
+			});
+		}
+	}
+	
+	$scope.removeGenre = function (selectBox) {
+		for (var i=selectBox.length-1; i>=0; i--) {
+			var count=0;
+			var removeIndex =-1;
+			angular.forEach($scope.selectedGenres, function(value, key){
+				if (value.genreId == selectBox[i]) {
+					removeIndex = count;
+				}
+				count++;
+			});
+			
+			if(removeIndex != -1) {
+				$scope.selectedGenres.splice(removeIndex,1);
+			}
+		}
+	}
+	
+	$scope.selectMoveAuthor = function (select1, select2) {
+		var auth;
+		for (var i=select1.length-1; i>=0; i--) {
+			angular.forEach($scope.authors, function(value, key){
+				if (value.authorId == select1[i]) {
+					auth = value;
+					var isDuplicate = false;
+					angular.forEach($scope.selectedAuthors, function(value2, key2){
+						if (value2.authorId == auth.authorId) {
+							isDuplicate = true;
+						}
+					});
+					
+					if (isDuplicate == false) {
+						$scope.selectedAuthors.push(auth);
+					}
+				}
+			});
+		}
+	}
+	
+	$scope.removeAuthor = function (selectBox) {
+		for (var i=selectBox.length-1; i>=0; i--) {
+			var count=0;
+			var removeIndex =-1;
+			angular.forEach($scope.selectedAuthors, function(value, key){
+				if (value.authorId == selectBox[i]) {
+					removeIndex = count;
+				}
+				count++;
+			});
+			
+			if(removeIndex != -1) {
+				$scope.selectedAuthors.splice(removeIndex,1);
+			}
+		}
+	}
+	
+	$scope.cancel = function() {
+		modalWindow.close('close');
+	}
+
+	$scope.addBook = function() {
+		console.log($scope.selectedPublisher);
+		pub = {
+				publisherId:$scope.selectedPublisher,
+				publisherName:" "
+		};
+		
+		var book = {
+				title:$scope.bookName,
+				publisher:pub,
+				authors:$scope.selectedAuthors,
+				genres:$scope.selectedGenres
+		};
+		
+		console.log(book);
+		
+		if ($scope.bookName == null) {
+			alert("Please enter book name");
+			if ($scope.selectedPublisher == null) {
+				alert("Please select pulisher");	
+				if ($scope.selectedAuthors.length == 0) {
+					alert("Please select author");	
+				}
+			}
+		}
+		else {
+			if ($scope.selectedPublisher != null) {
+				if ($scope.selectedAuthors.length > 0) {
+					$http.post("addBook",book).
+					success(function(data) {
+						alert("Success");	
+						modalWindow.close('close');
+					});
+				}
+			}
+		}
+		
+		
+		
+	}
+
+}]);
+
+lmsModule.controller('editBookCtrl', ["$scope", "$http", "$rootScope", 
+                                     function($scope, $http, $rootScope) {
+	
+	
+	$scope.bookName = $rootScope.book.title;
+   	//$scope.address = $rootScope.borrower.address;
+   	//$scope.phone = $rootScope.borrower.phone;
+	
+	$http.post("listGenres").
+	success(function(data) {
+		$scope.genres = data;	
+		$scope.selectedGenres = $rootScope.book.genres;
+	});
+	
+	$http.post("listPublishers/-1").
+	success(function(data) {
+		$scope.publishers = data;	
+	});
+	
+	$http.post("listAuthors/-1").
+	success(function(data) {
+		$scope.authors = data;
+		$scope.selectedAuthors = $rootScope.book.authors;
+	});
+	
+	$scope.$on('notificationAuthor', function (evt, data) {
+        $scope.authors = data;
+    });
+	
+	$scope.selectMoveGenre = function (select1, select2) {
+		var gen;
+		for (var i=select1.length-1; i>=0; i--) {
+			angular.forEach($scope.genres, function(value, key){
+				if (value.genreId == select1[i]) {
+					gen = value;
+					var isDuplicate = false;
+					angular.forEach($scope.selectedGenres, function(value2, key2){
+						if (value2.genreId == gen.genreId) {
+							isDuplicate = true;
+						}
+					});
+					
+					if (isDuplicate == false) {
+						$scope.selectedGenres.push(gen);
+					}
+				}
+			});
+		}
+	}
+	
+	$scope.removeGenre = function (selectBox) {
+		for (var i=selectBox.length-1; i>=0; i--) {
+			var count=0;
+			var removeIndex =-1;
+			angular.forEach($scope.selectedGenres, function(value, key){
+				if (value.genreId == selectBox[i]) {
+					removeIndex = count;
+				}
+				count++;
+			});
+			
+			if(removeIndex != -1) {
+				$scope.selectedGenres.splice(removeIndex,1);
+			}
+		}
+	}
+	
+	$scope.selectMoveAuthor = function (select1, select2) {
+		var auth;
+		for (var i=select1.length-1; i>=0; i--) {
+			angular.forEach($scope.authors, function(value, key){
+				if (value.authorId == select1[i]) {
+					auth = value;
+					var isDuplicate = false;
+					angular.forEach($scope.selectedAuthors, function(value2, key2){
+						if (value2.authorId == auth.authorId) {
+							isDuplicate = true;
+						}
+					});
+					
+					if (isDuplicate == false) {
+						$scope.selectedAuthors.push(auth);
+					}
+				}
+			});
+		}
+	}
+	
+	$scope.removeAuthor = function (selectBox) {
+		for (var i=selectBox.length-1; i>=0; i--) {
+			var count=0;
+			var removeIndex =-1;
+			angular.forEach($scope.selectedAuthors, function(value, key){
+				if (value.authorId == selectBox[i]) {
+					removeIndex = count;
+				}
+				count++;
+			});
+			
+			if(removeIndex != -1) {
+				$scope.selectedAuthors.splice(removeIndex,1);
+			}
+		}
+	}
+	
+	$scope.cancel = function() {
+		editModalWindow.close('close');
+	}
+
+	$scope.updateBook = function() {
+		pub = {
+				publisherId:$scope.selectedPublisher,
+				publisherName:" "
+		};
+		
+		var book = {
+				title:$scope.bookName,
+				bookId:$scope.book.bookId,
+				publisher:pub,
+				authors:$scope.selectedAuthors,
+				genres:$scope.selectedGenres
+		};
+		
+		console.log(book);
+		
+		if ($scope.bookName == null) {
+			alert("Please enter book name");
+			if ($scope.selectedPublisher == null) {
+				alert("Please select pulisher");	
+				if ($scope.selectedAuthors.length == 0) {
+					alert("Please select author");	
+				}
+			}
+		}
+		else {
+			if ($scope.selectedPublisher != null) {
+				if ($scope.selectedAuthors.length > 0) {
+					$http.post("editBook",book).
+					success(function(data) {
+						alert("Success");	
+						editModalWindow.close('close');
+					});
+				}
+			}
+		}
+		
+		
+		
+	}
+
+}]);
+
+
+lmsModule.controller('deleteBookCtrl', ["$scope", "$http", "$modal","$rootScope", 
+                                            function($scope, $http, $modal, $rootScope) {
+    	$scope.cancel = function() {
+    		deleteModalWindow.close('close');
+    	};
+    	
+    	$scope.deleteBook = function() {
+    		$http.post("deleteBook",$rootScope.book).
+    		success(function(data) {
+    			alert("Success");	
+    			deleteModalWindow.close('close');
+    		});
+    	}
+    	
+}]);
 

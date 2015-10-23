@@ -126,4 +126,32 @@
     <script type="text/javascript" src="js/wow.min.js"></script>
     <script type="text/javascript" src="js/main.js"></script>  
 </body>
+
+<script>
+	function selectMove(id1, id2) {
+		var name;
+		var s1 = document.getElementById(id1);
+		var s2 = document.getElementById(id2);
+		
+		for (var i = s1.length-1; i >= 0; i-- )
+		{
+			if(s1[i].selected) {
+				s2.appendChild(s1[i]);
+			}
+		}
+	}
+	
+	function selectRemove(id1) {
+		var name;
+		var s1 = document.getElementById(id1);
+		
+		for (var i = s1.length-1; i >= 0; i-- )
+		{
+			if(s1[i].selected) {
+				s1.removeChild(s1[i]);
+			}
+		}
+	}
+</script>
+
 </html>

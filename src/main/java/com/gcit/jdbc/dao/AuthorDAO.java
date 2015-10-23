@@ -63,6 +63,10 @@ public class AuthorDAO extends BaseDAO implements ResultSetExtractor<List<Author
 			return null;
 		}
 	}
+	
+	public List<Author> readAllNoLimit() throws SQLException {
+		return template.query("select * from tbl_author", this);
+	}
 
 	public List<Author> readAll() throws SQLException {
 		return template.query(setPageLimits("select * from tbl_author"), this);

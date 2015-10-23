@@ -58,6 +58,10 @@ public class PublisherDAO extends BaseDAO implements ResultSetExtractor<List<Pub
 			return null;
 		}
 	}
+	
+	public List<Publisher> readAllNoLimit() throws SQLException {
+		return template.query("select * from tbl_publisher", this);
+	}
 
 	public List<Publisher> readAll() throws SQLException {
 		return template.query(setPageLimits("select * from tbl_publisher"), this);

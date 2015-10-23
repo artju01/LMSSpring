@@ -42,16 +42,6 @@ public class AdministratorService {
 	Book_CopiesDAO bookCopiesDAO;
 	@Autowired
 	Book_LoansDAO bookLoansDAO;
-
-	public List<Publisher> getAllPublisher() throws SQLException {
-		List<Publisher> pubs = pubDAO.readAll();
-		
-		for (Publisher pub : pubs) {
-			pub.setBooks(bookDAO.readAllByPublisher(pub));
-		}
-		
-		return pubs;
-	}
 	
 	public List<Book> getAllBooks(int pageNo) throws SQLException {
 		if(pageNo <= 0)
@@ -149,6 +139,9 @@ public class AdministratorService {
 		return books;
 	}
 	
+	public List<Author> getAllAuthors() throws SQLException {
+		return authorDAO.readAllNoLimit();
+	}
 	
 	public List<Author> getAllAuthors(int pageNo) throws SQLException {
 		if(pageNo <= 0)
@@ -255,6 +248,14 @@ public class AdministratorService {
 		pubDAO.setPageNo(pageNo);
 		List<Publisher> pubs = pubDAO.readAll();
 		
+		return pubs;
+	}
+	
+	public List<Publisher> getAllPublisher() throws SQLException {
+		List<Publisher> pubs = pubDAO.readAllNoLimit();
+		for (Publisher pub : pubs) {
+			pub.setBooks(bookDAO.readAllByPublisher(pub));
+		}
 		return pubs;
 	}
 	

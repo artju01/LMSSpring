@@ -1,0 +1,77 @@
+<section data-ng-controller="addBookCtrl">
+	<div class="modal-header">
+		<button type="button" class="close" ng-click="cancel()" data-dismiss="modal"
+			aria-hidden="true">&times;</button>
+		<h4 class="modal-title">Add Book</h4>
+	</div>	
+	
+	<div class="modal-body">
+				<h2>Book Name</h2>
+				<input ng-model="bookName" />
+				<h3>Select Authors</h3>
+				<h4>
+				<ng-lms-search-box searchtype="AuthorsAll" ng-model="searchText" style="width: 150px"></ng-lms-search-box> 
+				</h4>	
+				<br><br>
+				<select ng-model="availableAuthors" multiple style="width: 150px">
+					<option ng-repeat= "author in authors" value={{author.authorId}}>{{author.authorName}}</option>
+				</select>
+			
+				<div class="btn-group-vertical">
+					<input type="button" id="btAdd" class="btn btn-primary"
+						value=&rarr;
+						ng-click="selectMoveAuthor(availableAuthors,selectedAuthorsBox);"/> 
+					<input
+						type="button" id="btRemove" class="btn btn-primary" value=&larr;
+						ng-click="removeAuthor(selectedAuthorsBox);" />
+				</div>
+				
+				<select  multiple style="width: 150px" ng-model="selectedAuthorsBox">
+					<option ng-repeat= "author in selectedAuthors" value={{author.authorId}}>{{author.authorName}}</option>
+				</select>
+				
+				<br><br>
+				
+				<h4>Select Publisher</h4>	
+				<select id=availablePublishers style="width: 150px" ng-model="selectedPublisher">
+					<option ng-repeat= "pub in publishers" value={{pub.publisherId}}>{{pub.publisherName}}</option>
+				</select>
+				
+				<br><br>
+			
+				<h3>Select Genres</h3>	
+				<select ng-model="availableGenres" multiple style="width: 150px">
+						<option ng-repeat= "genre in genres" value={{genre.genreId}}>{{genre.genreName}}</option>
+				</select>
+				
+				<div class="btn-group-vertical">
+					<input type="button" id="btAdd" class="btn btn-primary"
+						value=&rarr;
+						ng-click="selectMoveGenre(availableGenres,selectedGenresBox);" /> 
+					<input
+						type="button" id="btRemove" class="btn btn-primary" value=&larr;
+						ng-click="removeGenre(selectedGenresBox);" />
+				</div>
+				<select ng-model="selectedGenresBox" multiple style="width: 150px">
+					 <option ng-repeat= "genre in selectedGenres" value={{genre.genreId}}>{{genre.genreName}}</option>
+				</select>
+				
+			</div>
+	
+	<div class="modal-footer">
+		<button type="button" class="btn btn-default" data-dismiss="modal" ng-click="cancel()">Close</button>
+		<button type="button" class="btn btn-primary"
+			ng-click="addBook();">Add</button>
+	</div>
+	
+<style>	
+	.btn-group-vertical
+	{
+    	 vertical-align: top
+	}
+</style>
+
+
+</section>
+
+

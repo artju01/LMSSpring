@@ -73,7 +73,6 @@ public class BookDAO extends BaseDAO implements ResultSetExtractor<List<Book>>{
 	}
 
 	public void update(Book book) throws SQLException {
-		
 		if (book.getPublisher() != null) {
 			template.update("update tbl_book  set title = ?, pubId = ? where bookId = ?",
 					new Object[] { book.getTitle(), book.getPublisher().getPublisherId(), book.getBookId() });
@@ -88,7 +87,6 @@ public class BookDAO extends BaseDAO implements ResultSetExtractor<List<Book>>{
 			}
 		}
 
-		
 		template.update("delete from tbl_book_genres where bookId = ?",
 				new Object[] { book.getBookId() });
 		if (book.getGenres() != null) {

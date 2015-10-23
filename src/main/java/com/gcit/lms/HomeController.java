@@ -66,7 +66,7 @@ public class HomeController {
 	}
 	
 	@RequestMapping(value = "/deleteAuthor", method = RequestMethod.POST , consumes = "application/json")
-	public @ResponseBody String deleteAuthor(@RequestBody Author author,
+	public  String deleteAuthor(@RequestBody Author author,
 			Locale locale, Model model) {
 		try {
 			adminService.deleteAuthor(author);
@@ -83,9 +83,17 @@ public class HomeController {
 	public  List<Author> listAuthors(
 			@PathVariable(value = "pageNo") Integer pageNo) {
 		try {
-			if (pageNo == null)
+			if (pageNo == null) {
 				pageNo = 1;
-			return adminService.getAllAuthors(pageNo);
+				return adminService.getAllAuthors(pageNo);
+			}
+			else if (pageNo == -1) {
+				return adminService.getAllAuthors();
+			}
+			else {
+				return adminService.getAllAuthors(pageNo);
+			}
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
@@ -93,38 +101,41 @@ public class HomeController {
 	}
 	
 	@RequestMapping(value = "/countAuthors", method = { RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
-	public @ResponseBody String countAuthors() {
+	public  int countAuthors() {
 		try {
-			int count = adminService.getAuthorCount();
-			ObjectMapper mapper = new ObjectMapper();
-			return mapper.writeValueAsString(count);
+			return adminService.getAuthorCount();
 		} catch (Exception e) {
 			e.printStackTrace();
-			return "countAuthors get failed. Reason: " + e.getMessage();
+			return 0;
 		}
 	}
 	
 	@RequestMapping(value = "/searchAuthorsWithPage/{pageNo}/{searchText}", method = {
 			RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
-	public @ResponseBody String searchAuthorsWithPage(
+	public List<Author> searchAuthorsWithPage(
 			@PathVariable(value = "pageNo") Integer pageNo,
 			@PathVariable(value = "searchText") String searchText) {
 		try {
-			if (pageNo == null)
+			if (pageNo == null) {
 				pageNo = 1;
-			List<Author> authors = adminService.searchAuthorsWithPage(searchText, pageNo);
-			ObjectMapper mapper = new ObjectMapper();
-			return mapper.writeValueAsString(authors);
+				return adminService.searchAuthorsWithPage(searchText, pageNo);
+			}
+			else if (pageNo == -1) {
+				return adminService.searchAuthors(searchText);
+			}
+			else {
+				return adminService.searchAuthorsWithPage(searchText, pageNo);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			return "Authors search failed. Reason: " + e.getMessage();
+			return null;
 		}
 	}
 	
 	//////////////////////Borrower/////////////////////////////////
 	
 	@RequestMapping(value = "/addBorrower", method = RequestMethod.POST, consumes = "application/json")
-	public @ResponseBody String addBorrower(@RequestBody Borrower borrow,
+	public  String addBorrower(@RequestBody Borrower borrow,
 			Locale locale, Model model) {
 		try {
 			adminService.addBorrower(borrow);
@@ -136,7 +147,7 @@ public class HomeController {
 	}
 	
 	@RequestMapping(value = "/editBorrower", method = RequestMethod.POST, consumes = "application/json")
-	public @ResponseBody String editBorrower(@RequestBody Borrower borrow,
+	public String editBorrower(@RequestBody Borrower borrow,
 			Locale locale, Model model) {
 		try {
 			adminService.updateBorrower(borrow);
@@ -148,7 +159,7 @@ public class HomeController {
 	}
 	
 	@RequestMapping(value = "/deleteBorrower", method = RequestMethod.POST, consumes = "application/json")
-	public @ResponseBody String deleteBorrower(@RequestBody Borrower borrow,
+	public String deleteBorrower(@RequestBody Borrower borrow,
 			Locale locale, Model model) {
 		
 		try {
@@ -162,53 +173,47 @@ public class HomeController {
 	
 	@RequestMapping(value = "/listBorrowers/{pageNo}", method = {
 			RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
-	public @ResponseBody String listBorrowers(
+	public List<Borrower> listBorrowers(
 			@PathVariable(value = "pageNo") Integer pageNo) {
 		try {
 			if (pageNo == null)
 				pageNo = 1;
-			List<Borrower> borrow = adminService.getAllBorrower(pageNo);
-			ObjectMapper mapper = new ObjectMapper();
-			return mapper.writeValueAsString(borrow);
+			return adminService.getAllBorrower(pageNo);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return "Borrowers get failed. Reason: " + e.getMessage();
+			return null;
 		}
 	}
 	
 	@RequestMapping(value = "/countBorrowers", method = { RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
-	public @ResponseBody String countBorrowrs() {
+	public int countBorrowrs() {
 		try {
-			int count = adminService.getBorrowerCount();
-			ObjectMapper mapper = new ObjectMapper();
-			return mapper.writeValueAsString(count);
+			return adminService.getBorrowerCount();
 		} catch (Exception e) {
 			e.printStackTrace();
-			return "countBorrowrs get failed. Reason: " + e.getMessage();
+			return 0;
 		}
 	}
 	
 	@RequestMapping(value = "/searchBorrowersWithPage/{pageNo}/{searchText}", method = {
 			RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
-	public @ResponseBody String searchBorrowersWithPage(
+	public  List<Borrower> searchBorrowersWithPage(
 			@PathVariable(value = "pageNo") Integer pageNo,
 			@PathVariable(value = "searchText") String searchText) {
 		try {
 			if (pageNo == null)
 				pageNo = 1;
-			List<Borrower> borrows = adminService.searchBorrowersWithPage(searchText, pageNo);
-			ObjectMapper mapper = new ObjectMapper();
-			return mapper.writeValueAsString(borrows);
+			return adminService.searchBorrowersWithPage(searchText, pageNo);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return "Authors search failed. Reason: " + e.getMessage();
+			return null;
 		}
 	}
 	
 	//////////////////////Branch/////////////////////////////////
 	
 	@RequestMapping(value = "/addBranch", method = RequestMethod.POST, consumes = "application/json")
-	public @ResponseBody String addBranch(@RequestBody Branch branch,
+	public String addBranch(@RequestBody Branch branch,
 			Locale locale, Model model) {
 		try {
 			adminService.addBranch(branch);
@@ -220,7 +225,7 @@ public class HomeController {
 	}
 	
 	@RequestMapping(value = "/editBranch", method = RequestMethod.POST, consumes = "application/json")
-	public @ResponseBody String editBranch(@RequestBody Branch branch,
+	public String editBranch(@RequestBody Branch branch,
 			Locale locale, Model model) {
 		try {
 			adminService.updateBranch(branch);
@@ -232,7 +237,7 @@ public class HomeController {
 	}
 	
 	@RequestMapping(value = "/deleteBranch", method = RequestMethod.POST, consumes = "application/json")
-	public @ResponseBody String deleteBorrower(@RequestBody Branch branch,
+	public String deleteBorrower(@RequestBody Branch branch,
 			Locale locale, Model model) {
 		
 		try {
@@ -246,53 +251,47 @@ public class HomeController {
 	
 	@RequestMapping(value = "/listBranches/{pageNo}", method = {
 			RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
-	public @ResponseBody String listBranches(
+	public List<Branch> listBranches(
 			@PathVariable(value = "pageNo") Integer pageNo) {
 		try {
 			if (pageNo == null)
 				pageNo = 1;
-			List<Branch> branches = adminService.getAllBranches(pageNo);
-			ObjectMapper mapper = new ObjectMapper();
-			return mapper.writeValueAsString(branches);
+			return adminService.getAllBranches(pageNo);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return "Branches get failed. Reason: " + e.getMessage();
+			return null;
 		}
 	}
 	
 	@RequestMapping(value = "/countBranches", method = { RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
-	public @ResponseBody String countBranches() {
+	public int countBranches() {
 		try {
-			int count = adminService.getBranchCount();
-			ObjectMapper mapper = new ObjectMapper();
-			return mapper.writeValueAsString(count);
+			return adminService.getBranchCount();
 		} catch (Exception e) {
 			e.printStackTrace();
-			return "countBranches get failed. Reason: " + e.getMessage();
+			return 0;
 		}
 	}
 	
 	@RequestMapping(value = "/searchBranchesWithPage/{pageNo}/{searchText}", method = {
 			RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
-	public @ResponseBody String searchBranchesWithPage(
+	public List<Branch> searchBranchesWithPage(
 			@PathVariable(value = "pageNo") Integer pageNo,
 			@PathVariable(value = "searchText") String searchText) {
 		try {
 			if (pageNo == null)
 				pageNo = 1;
-			List<Branch> branches = adminService.searchBranchesWithPage(searchText, pageNo);
-			ObjectMapper mapper = new ObjectMapper();
-			return mapper.writeValueAsString(branches);
+			return adminService.searchBranchesWithPage(searchText, pageNo);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return "Branches search failed. Reason: " + e.getMessage();
+			return null;
 		}
 	}
 	
 	//////////////////////Book/////////////////////////////////
 
 	@RequestMapping(value = "/addBook", method = RequestMethod.POST, consumes = "application/json")
-	public @ResponseBody String addBook(@RequestBody Book book,
+	public String addBook(@RequestBody Book book,
 			Locale locale, Model model) {
 		try {
 			adminService.addBook(book);
@@ -304,7 +303,7 @@ public class HomeController {
 	}
 
 	@RequestMapping(value = "/editBook", method = RequestMethod.POST, consumes = "application/json")
-	public @ResponseBody String editBook(@RequestBody Book book,
+	public String editBook(@RequestBody Book book,
 			Locale locale, Model model) {
 		try {
 			adminService.updateBook(book);
@@ -316,7 +315,7 @@ public class HomeController {
 	}
 
 	@RequestMapping(value = "/deleteBook", method = RequestMethod.POST, consumes = "application/json")
-	public @ResponseBody String deleteBook(@RequestBody Book book,
+	public String deleteBook(@RequestBody Book book,
 			Locale locale, Model model) {
 
 		try {
@@ -330,53 +329,47 @@ public class HomeController {
 
 	@RequestMapping(value = "/listBooks/{pageNo}", method = {
 			RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
-	public @ResponseBody String listBooks(
+	public List<Book> listBooks(
 			@PathVariable(value = "pageNo") Integer pageNo) {
 		try {
 			if (pageNo == null)
 				pageNo = 1;
-			List<Book> books = adminService.getAllBooks(pageNo);
-			ObjectMapper mapper = new ObjectMapper();
-			return mapper.writeValueAsString(books);
+			return adminService.getAllBooks(pageNo);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return "Books get failed. Reason: " + e.getMessage();
+			return null;
 		}
 	}
 
 	@RequestMapping(value = "/countBooks", method = { RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
-	public @ResponseBody String countBooks() {
+	public int countBooks() {
 		try {
-			int count = adminService.getBookCount();
-			ObjectMapper mapper = new ObjectMapper();
-			return mapper.writeValueAsString(count);
+			return adminService.getBookCount();
 		} catch (Exception e) {
 			e.printStackTrace();
-			return "countBooks get failed. Reason: " + e.getMessage();
+			return 0;
 		}
 	}
 
 	@RequestMapping(value = "/searchBooksWithPage/{pageNo}/{searchText}", method = {
 			RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
-	public @ResponseBody String searchBooksWithPage(
+	public List<Book> searchBooksWithPage(
 			@PathVariable(value = "pageNo") Integer pageNo,
 			@PathVariable(value = "searchText") String searchText) {
 		try {
 			if (pageNo == null)
 				pageNo = 1;
-			List<Book> books = adminService.searchBooksWithPage(searchText, pageNo);
-			ObjectMapper mapper = new ObjectMapper();
-			return mapper.writeValueAsString(books);
+			return adminService.searchBooksWithPage(searchText, pageNo);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return "Books search failed. Reason: " + e.getMessage();
+			return null;
 		}
 	}
 
 	//////////////////////Publisher/////////////////////////////////
 
 	@RequestMapping(value = "/addPublisher", method = RequestMethod.POST, consumes = "application/json")
-	public @ResponseBody String addPublisher(@RequestBody Publisher pub,
+	public String addPublisher(@RequestBody Publisher pub,
 			Locale locale, Model model) {
 		try {
 			adminService.addPublisher(pub);
@@ -388,7 +381,7 @@ public class HomeController {
 	}
 
 	@RequestMapping(value = "/editPublisher", method = RequestMethod.POST, consumes = "application/json")
-	public @ResponseBody String editPublisher(@RequestBody Publisher pub,
+	public String editPublisher(@RequestBody Publisher pub,
 			Locale locale, Model model) {
 		try {
 			adminService.updatePublisher(pub);
@@ -400,7 +393,7 @@ public class HomeController {
 	}
 
 	@RequestMapping(value = "/deletePublisher", method = RequestMethod.POST, consumes = "application/json")
-	public @ResponseBody String deletePublisher(@RequestBody Publisher pub,
+	public String deletePublisher(@RequestBody Publisher pub,
 			Locale locale, Model model) {
 
 		try {
@@ -414,52 +407,54 @@ public class HomeController {
 
 	@RequestMapping(value = "/listPublishers/{pageNo}", method = {
 			RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
-	public @ResponseBody String listPublishers(
+	public List<Publisher> listPublishers(
 			@PathVariable(value = "pageNo") Integer pageNo) {
 		try {
-			if (pageNo == null)
+			if (pageNo == null) {
 				pageNo = 1;
-			List<Publisher> pubs = adminService.getAllPublisher(pageNo);
-			ObjectMapper mapper = new ObjectMapper();
-			return mapper.writeValueAsString(pubs);
+				return adminService.getAllPublisher(pageNo);
+			}
+			else if (pageNo == -1) {
+				return adminService.getAllPublisher();
+			}
+			else {
+				return adminService.getAllPublisher(pageNo);
+			}
+			
 		} catch (Exception e) {
 			e.printStackTrace();
-			return "Publishers get failed. Reason: " + e.getMessage();
+			return null;
 		}
 	}
 
 	@RequestMapping(value = "/countPublishers", method = { RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
-	public @ResponseBody String countPublishers() {
+	public int countPublishers() {
 		try {
-			int count = adminService.getPublisherCount();
-			ObjectMapper mapper = new ObjectMapper();
-			return mapper.writeValueAsString(count);
+			return adminService.getPublisherCount();
 		} catch (Exception e) {
 			e.printStackTrace();
-			return "countPublishers get failed. Reason: " + e.getMessage();
+			return 0;
 		}
 	}
 
 	@RequestMapping(value = "/searchPublishersWithPage/{pageNo}/{searchText}", method = {
 			RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
-	public @ResponseBody String searchPublishersWithPage(
+	public List<Publisher> searchPublishersWithPage(
 			@PathVariable(value = "pageNo") Integer pageNo,
 			@PathVariable(value = "searchText") String searchText) {
 		try {
 			if (pageNo == null)
 				pageNo = 1;
-			List<Publisher> pubs = adminService.searchPublishersWithPage(searchText, pageNo);
-			ObjectMapper mapper = new ObjectMapper();
-			return mapper.writeValueAsString(pubs);
+			return adminService.searchPublishersWithPage(searchText, pageNo);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return "Publishers search failed. Reason: " + e.getMessage();
+			return null;
 		}
 	}
 	
 	//////////////////////Book_Loans/////////////////////////////////
 	@RequestMapping(value = "/editBookLoan", method = RequestMethod.POST, consumes = "application/json")
-	public @ResponseBody String editBookLoan(@RequestBody BookLoans bookloan,
+	public String editBookLoan(@RequestBody BookLoans bookloan,
 			Locale locale, Model model) {
 		try {
 			adminService.updateBookLoans(bookloan);
@@ -472,56 +467,48 @@ public class HomeController {
 	
 	@RequestMapping(value = "/listBookLoans/{pageNo}", method = {
 			RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
-	public @ResponseBody String listBookLoans(
+	public List<BookLoans> listBookLoans(
 			@PathVariable(value = "pageNo") Integer pageNo) {
 		try {
 			if (pageNo == null)
 				pageNo = 1;
-			List<BookLoans> bookloans = adminService.getAllUnreturnBookLoans(pageNo);
-			ObjectMapper mapper = new ObjectMapper();
-			return mapper.writeValueAsString(bookloans);
+			return adminService.getAllUnreturnBookLoans(pageNo);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return "BookLoans get failed. Reason: " + e.getMessage();
+			return null;
 		}
 	}
 
 	@RequestMapping(value = "/countBookloans", method = { RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
-	public @ResponseBody String countBookloans() {
+	public int countBookloans() {
 		try {
-			int count = adminService.getUnreturnBookLoansCount();
-			ObjectMapper mapper = new ObjectMapper();
-			return mapper.writeValueAsString(count);
+			return adminService.getUnreturnBookLoansCount();
 		} catch (Exception e) {
 			e.printStackTrace();
-			return "countBookLoanss get failed. Reason: " + e.getMessage();
+			return 0;
 		}
 	}
 	
 	//////////////////////Genre/////////////////////////////////
 	@RequestMapping(value = "/listGenres", method = {
 			RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
-	public @ResponseBody String listBookLoans( ) {
+	public List<Genre> listGenres( ) {
 		try {
-			List<Genre> gen = adminService.getAllGenres();
-			ObjectMapper mapper = new ObjectMapper();
-			return mapper.writeValueAsString(gen);
+			return adminService.getAllGenres();
 		} catch (Exception e) {
 			e.printStackTrace();
-			return "BookLoans get failed. Reason: " + e.getMessage();
+			return null;
 		}
 	}
 	
 	@RequestMapping(value = "/searchGenres/{searchText}", method = {
 			RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
-	public @ResponseBody String searchGenresWithPage(@PathVariable(value = "searchText") String searchText) {
+	public List<Genre> searchGenresWithPage(@PathVariable(value = "searchText") String searchText) {
 		try {
-			List<Genre> gens = adminService.searchGenres(searchText);
-			ObjectMapper mapper = new ObjectMapper();
-			return mapper.writeValueAsString(gens);
+			return adminService.searchGenres(searchText);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return "Publishers search failed. Reason: " + e.getMessage();
+			return null;
 		}
 	}
 }
