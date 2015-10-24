@@ -17,6 +17,7 @@ import com.gcit.jdbc.dao.BranchDAO;
 import com.gcit.jdbc.dao.GenreDAO;
 import com.gcit.jdbc.dao.PublisherDAO;
 import com.gcit.jdbc.service.AdministratorService;
+import com.gcit.jdbc.service.LibrarianService;
 
 @Configuration
 @EnableTransactionManagement
@@ -25,6 +26,11 @@ public class LMSConfiguration {
 	@Bean
 	public AdministratorService admin() {
 		return new AdministratorService();
+	}
+	
+	@Bean
+	public LibrarianService librarian() {
+		return new LibrarianService();
 	}
 
 	@Bean

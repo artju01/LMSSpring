@@ -1,0 +1,43 @@
+<section data-ng-controller="listBookLoansCtrl">
+<div class="modal-header">
+	<h4 class="modal-title">BookLoans</h4>
+</div>
+
+
+<div class="modal-body">
+	
+	<div id="bookLoansList">
+	  	<table class="table">
+			<tr>
+				<th style="text-align:center">Borrower</th>	
+				<th style="text-align:center">Date Out</th>
+				<th style="text-align:center">Due Date</th>
+				<th style="text-align:center">Edit Due Date</th>
+			</tr>
+			<tr ng-repeat="bl in bookLoans">
+				<td style="text-align:center">{{bl.borrower.name}}</td>
+				<td style="text-align:center">{{bl.dateOut}}</td>
+				<td style="text-align:center">{{bl.dueDate}}</td>
+				<td style="text-align:center">
+					<a href="javascript:;" ng-click="editBookLoan(bl);" data-target="#myModal1" data-toggle="modal">
+						<i class="fa fa-pencil-square-o"></i>
+					</a>
+				</td>
+			</tr>
+		</table>
+	</div>
+</div>
+
+
+
+<nav align="center">
+	<ul class="pagination">
+		<li><a>left</a></li>
+		<li ng-repeat-start="i in range"></li>
+		<li><a href="javascript:;" ng-click="pageAuthor(i);">{{i}}</a></li>
+		<li ng-repeat-end></li>
+		<li><a>right</a></li>
+	</ul>
+</nav>
+
+</section>

@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.gcit.jdbc.dao.BookDAO;
@@ -16,6 +17,7 @@ import com.gcit.jdbc.entity.Book;
 import com.gcit.jdbc.entity.BookCopies;
 import com.gcit.jdbc.entity.Branch;
 
+@Service
 public class LibrarianService {
 	@Autowired
 	BranchDAO branchDAO;

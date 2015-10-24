@@ -1,0 +1,43 @@
+<section data-ng-controller="listLibrarianBranchesCtrl">
+<div class="modal-header">
+	<h4 class="modal-title">Please Select Library Branch</h4>
+</div>
+
+<div class="modal-body">
+	<div id="bookLoansList">
+	  	<table class="table">
+			<tr>
+				<th style="text-align:center">Name</th>
+				<th style="text-align:center">Address</th>
+				<th style="text-align:center">Manage</th>
+				<th style="text-align:center">Edit</th>
+			</tr>
+			<tr ng-repeat="branch in branches">
+				<td style="text-align:center">{{branch.name}}</td>
+				<td style="text-align:center">{{branch.address}}</td>
+				<td style="text-align:center">
+					<a href="javascript:;" ng-click="manageBranch(branch);" data-target="#myModal1" data-toggle="modal">
+						<i class="fa fa-database"></i>
+					</a>
+				</td>
+				<td style="text-align:center">
+					<a href="javascript:;" ng-click="editBranch(branch);" data-target="#myModal1" data-toggle="modal">
+						<i class="fa fa-pencil-square-o"></i>
+					</a>
+				</td>
+			</tr>
+		</table>
+	</div>
+</div>
+
+<nav align="center">
+	<ul class="pagination">
+		<li><a>left</a></li>
+		<li ng-repeat-start="i in range"></li>
+		<li><a href="javascript:;" ng-click="pageBrsnches(i);">{{i}}</a></li>
+		<li ng-repeat-end></li>
+		<li><a>right</a></li>
+	</ul>
+</nav>
+
+</section>

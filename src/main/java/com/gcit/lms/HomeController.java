@@ -18,12 +18,14 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gcit.jdbc.entity.Author;
 import com.gcit.jdbc.entity.Book;
+import com.gcit.jdbc.entity.BookCopies;
 import com.gcit.jdbc.entity.BookLoans;
 import com.gcit.jdbc.entity.Borrower;
 import com.gcit.jdbc.entity.Branch;
 import com.gcit.jdbc.entity.Genre;
 import com.gcit.jdbc.entity.Publisher;
 import com.gcit.jdbc.service.AdministratorService;
+import com.gcit.jdbc.service.LibrarianService;
 
 /**
  * Handles requests for the application home page.
@@ -33,6 +35,8 @@ public class HomeController {
 	
 	@Autowired
 	AdministratorService adminService;
+	@Autowired
+	LibrarianService libService;
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(HomeController.class);
@@ -509,6 +513,30 @@ public class HomeController {
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
+		}
+	}
+	
+	//////////////////////BookCopies/////////////////////////////////
+	@RequestMapping(value = "/listBookCopies/{branchId}", method = {
+			RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
+	public List<BookCopies> searchGenresWithPage(@PathVariable(value = "branchId") int branchId) {
+		try {
+			return libService.getBookCopiesByBranch(branchId);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	@RequestMapping(value = "/updateBookCopy", method = RequestMethod.POST, consumes = "application/json")
+	public String updateBookCopy(@RequestBody BookCopies copy,
+			Locale locale, Model model) {
+		try {
+			libService.updateBookCopies(copy);
+			return "BookCopy update succesfully";
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "BookCopy update failed. Reason: " + e.getMessage();
 		}
 	}
 }

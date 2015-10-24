@@ -183,6 +183,10 @@ lmsModule.config([ "$routeProvider", function($routeProvider) {
 		templateUrl : "listBranches.html"
 	}).when("/listBorrowers", {
 		templateUrl : "listBorrowers.html"
+	}).when("/listBookLoans", {
+		templateUrl : "listBookLoans.html"
+	}).when("/listLibrarianBranches", {
+		templateUrl : "listLibrarianBranches.html"
 	})
 } ]);
 
@@ -1217,4 +1221,151 @@ lmsModule.controller('deleteBookCtrl', ["$scope", "$http", "$modal","$rootScope"
     	}
     	
 }]);
+
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////BookLoan////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+lmsModule.controller('listBookLoansCtrl', ["$scope", "$http", "$modal", "$rootScope", function($scope, $http, $modal, $rootScope) {
+	$http.post("countBookloans").
+	success(function(data) {
+		var range = [];
+		var maxPage = Math.ceil(data/10);
+		for(var i=1;(i<=maxPage);i++) {
+			range.push(i);
+		}
+		$scope.range = range;
+
+		$http.post("listBookLoans/1").
+		success(function(data) {
+			$scope.bookLoans = data;				
+		});
+	});
+
+	$scope.pageBorrowers = function(pgNo) {
+		currentPage = pgNo;
+		$scope.reloadData();
+	}
+
+	$scope.$on('notification', function (evt, data) {
+		$scope.borrowers = data;
+	});
+
+	$scope.reloadData = function () {
+		$http.post("listBookLoans/"+currentPage).
+		success(function(data) {
+			$scope.borrowers = data;
+		});	
+	}
+
+	$scope.editBookLoan = function(bl) {
+		$rootScope.bookLoan = bl;
+		editModalWindow = $modal.open({
+			templateUrl: "editBookLoansModal.html",
+			controller: "editBookLoanCtrl"
+		});
+
+	}
+
+}]);
+
+
+lmsModule.controller('editBookLoanCtrl', ["$scope", "$http", "$modal","$rootScope", 
+                                           function($scope, $http, $modal, $rootScope) {
+   
+   	$scope.cancel = function() {
+   		editModalWindow.close('close');
+   	};
+   	
+   	$scope.updateBookLoan = function() {
+   		$rootScope.borrower.name = $scope.name;
+   		$rootScope.borrower.address =  $scope.address;
+   		$rootScope.borrower.phone =  $scope.phone;
+   		$http.post("editBorrower",$rootScope.borrower).
+   		success(function(data) {
+   			alert("Success");	
+   			editModalWindow.close('close');
+   		});
+   	}
+}]);
+
+
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////LIBRARIAN BRANCHES//////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+lmsModule.controller('listLibrarianBranchesCtrl', ["$scope", "$http", "$modal", "$rootScope",
+                                          function($scope, $http, $modal, $rootScope) {
+	$http.post("countBranches").
+	success(function(data) {
+		var range = [];
+		var maxPage = Math.ceil(data/10);
+		for(var i=1;(i<=maxPage);i++) {
+			range.push(i);
+		}
+		$scope.range = range;
+
+		$http.post("listBranches/1").
+		success(function(data) {
+			$scope.branches = data;				
+		});
+	});
+
+	$scope.reloadData = function () {
+		$http.post("listBranches/"+currentPage).
+		success(function(data) {
+			$scope.branches = data;
+		});	
+	}
+
+	$scope.$on('notification', function (evt, data) {
+		$scope.branches = data;
+	});
+
+	$scope.pageBranches = function(pgNo) {
+		currentPage = pgNo;
+		$scope.reloadData();
+	}
+
+	$scope.editBranch = function(branch) {
+		$rootScope.branch = branch;
+		editModalWindow = $modal.open({
+			templateUrl: "editBranchModal.html",
+			controller: "editBranchCtrl"
+		});
+
+	}
+	
+	$scope.manageBranch = function(branch) {
+		$rootScope.branch = branch;
+		editModalWindow = $modal.open({
+			templateUrl: "editBookCopiesModal.html",
+			controller: "editBookCopiesCtrl"
+		});
+
+	}
+	
+}]);
+
+
+lmsModule.controller('editBookCopiesCtrl', ["$scope", "$http", "$modal","$rootScope", 
+                                        function($scope, $http, $modal, $rootScope) {
+	$http.post("listBookCopies/"+$rootScope.branch.branchId).
+	success(function(data) {
+		$scope.bookCopies = data;				
+	});
+	
+	$scope.updateBookCopy = function(copy) {
+		console.log(copy);
+		$http.post("updateBookCopy", copy).
+   		success(function(data) {
+   			alert("Success");	
+   			editModalWindow.close('close');
+   		});
+	};
+	
+	$scope.cancel = function() {
+		editModalWindow.close('close');
+	};
+}]);
+
+
 
