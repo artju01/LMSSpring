@@ -592,4 +592,28 @@ public class HomeController {
 			return "CheckOut failed. Reason: " + e.getMessage();
 		}
 	}
+	
+	@RequestMapping(value = "/listBookLoansNotReturnForBorrower", method = {
+			RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
+	public List<BookLoans> listBookLoansNotReturnForBorrower(@RequestBody Borrower borrower) {
+		try {
+			return borrowService.getAllBookLoansByBorrowerWithNotReturn(borrower);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	@RequestMapping(value = "/returnBookLoan", method = {
+			RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
+	public String returnBookLoan(@RequestBody BookLoans bookloan) {
+		try {
+			borrowService.returnBook(bookloan);
+			return "book retrun succesfully";
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "book retrun failed. Reason: " + e.getMessage();
+		}
+	}
+	
 }

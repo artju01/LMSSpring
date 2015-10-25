@@ -1,0 +1,42 @@
+<section data-ng-controller="returnCtrl">
+<div class="modal-header">
+	<h4 class="modal-title">Return Book</h4>
+</div>
+
+<div class="modal-body">
+	<div id="borowerList">
+	  	<h4>Select Borrower</h4>	
+				<select style="width: 150px" ng-model="selectedBorrower" ng-change="changedValue(selectedBorrower)">
+					<option ng-repeat= "borrow in borrowers" value={{borrow.cardNo}}>{{borrow.name}}</option>
+		</select>
+	</div>
+
+	<div id="bookList">
+	  	<h4>Book Loans</h4>	
+		<table class="table table-hover">
+			<thead>
+				<tr>
+					<th style="text-align: center">Book Title</th>
+					<th style="text-align: center">Branch</th>
+					<th style="text-align: center">DateOut</th>
+					<th style="text-align: center">DueDate</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr ng-repeat="loan in bookLoans">
+					<td align="center">{{loan.book.title}}</td>
+					<td align="center">{{loan.branch.name}}</td>
+					<td align="center">{{loan.dateOut}}</td>
+					<td align="center">{{loan.dueDate}}</td>
+					<td align="center"><button type="button"
+							class="btn btn-primary"
+							href="javascript:;" ng-click="returnBookLoan(loan);">Return this book
+							</button></td>
+				</tr>
+			</tbody>
+		</table>		
+	</div>
+</div>
+
+
+</section>

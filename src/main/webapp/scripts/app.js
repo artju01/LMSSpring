@@ -189,6 +189,8 @@ lmsModule.config([ "$routeProvider", function($routeProvider) {
 		templateUrl : "listLibrarianBranches.html"
 	}).when("/checkOutBook", {
 		templateUrl : "checkOutBook.html"
+	}).when("/returnBook", {
+		templateUrl : "returnBook.html"
 	})
 } ]);
 
@@ -1418,68 +1420,96 @@ lmsModule.controller('editBookCopiesCtrl', ["$scope", "$http", "$modal","$rootSc
 ///////////////////////////Borrower////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////
 lmsModule.controller('checkOutCtrl', ["$scope", "$http", "$modal", "$rootScope",
-                                                   function($scope, $http, $modal, $rootScope) {
+                                      function($scope, $http, $modal, $rootScope) {
 	$http.post("listBorrowers/-1").
 	success(function(data) {
 		$scope.borrowers = data;
 	});
-	
+
 	$http.post("listBranches/-1").
 	success(function(data) {
 		$scope.branches = data;
 	});
-	
-	 $scope.changedValue = function(branchId){
-		 $http.post("listBookCopies/"+branchId).
-			success(function(data) {
-				$scope.bookCopies = data;				
-		});
-	 }       
 
-	 $scope.checkOut = function(copy){
-		 if (copy.noOfCopies <= 0) {
-			 alert("Book Not Available !!");
-		 }
-		 else {
-			 var borrower = {
-					 cardNo: $scope.selectedBorrower
-			 };
-			
-			 $http.post("listBookLoansForBorrower",borrower).
-				success(function(loanData) {
-					var checker  = false;
-					angular.forEach(loanData, function(value, key){
-					    if(value.book.bookId == copy.book.bookId) {
-					    	checker = true;
-					    	alert("You already check out this book !!");
-					    }			
-					});
-					
-					if (checker == false) {
-						//save 
-						var today = new Date();
-						var dueDate = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000);
-						var bookloanData = {
-								borrower: {
-									cardNo:$scope.selectedBorrower
-								},
-								book:{
-									bookId:copy.book.bookId
-								},
-								branch:{
-									branchId:$scope.selectedBranch
-								},
-								dateOut:today,
-								dueDate:dueDate
+	$scope.changedValue = function(branchId){
+		$http.post("listBookCopies/"+branchId).
+		success(function(data) {
+			$scope.bookCopies = data;				
+		});
+	}       
+
+	$scope.checkOut = function(copy){
+		if (copy.noOfCopies <= 0) {
+			alert("Book Not Available !!");
+		}
+		else {
+			var borrower = {
+					cardNo: $scope.selectedBorrower
+			};
+
+			$http.post("listBookLoansForBorrower",borrower).
+			success(function(loanData) {
+				var checker  = false;
+				angular.forEach(loanData, function(value, key){
+					if(value.book.bookId == copy.book.bookId) {
+						if (value.dateIn == null) {
+							checker = true;
+							alert("You already check out this book !!");
 						}
-						 $http.post("addBookLoan",bookloanData).
-							success(function(data) {
-								alert("success");	
-								$scope.changedValue($scope.selectedBranch);
-						});
+					}			
+				});
+
+				if (checker == false) {
+					//save 
+					var today = new Date();
+					var dueDate = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000);
+					var bookloanData = {
+							borrower: {
+								cardNo:$scope.selectedBorrower
+							},
+							book:{
+								bookId:copy.book.bookId
+							},
+							branch:{
+								branchId:$scope.selectedBranch
+							},
+							dateOut:today,
+							dueDate:dueDate
 					}
+					$http.post("addBookLoan",bookloanData).
+					success(function(data) {
+						alert("success");	
+						$scope.changedValue($scope.selectedBranch);
+					});
+				}
 			});
-		 }
-	 }
+		}
+	}
 }]);
 
+lmsModule.controller('returnCtrl', ["$scope", "$http", "$modal", "$rootScope",
+                                    function($scope, $http, $modal, $rootScope) {
+	$http.post("listBorrowers/-1").
+	success(function(data) {
+		$scope.borrowers = data;
+	});
+
+
+	$scope.changedValue = function(cardNo){
+		var borrower = {
+				cardNo:cardNo
+		}
+		$http.post("listBookLoansNotReturnForBorrower/",borrower).
+		success(function(data) {
+			console.log(data);
+			$scope.bookLoans = data;				
+		});
+	}       
+
+	$scope.returnBookLoan = function(loan){
+		$http.post("returnBookLoan/",loan).
+		success(function(data) {
+			$scope.changedValue(loan.borrower.cardNo);				
+		});
+	}
+}]);
