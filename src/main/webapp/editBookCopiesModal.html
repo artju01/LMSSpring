@@ -6,11 +6,21 @@
 	</div>
 
 	<div class="modal-body">
+		<select style="width: 150px" ng-model="selectedBook">
+					<option ng-repeat= "book in books" value={{book.bookId}}>{{book.title}}</option>
+		</select>
+		
+		<input value=0 ng-model=newNoOfCopies
+						onkeypress='return event.charCode >= 48 && event.charCode <= 57' />
+		<button type="button" class="btn btn-success btn-sm" ng-click="addBookCopy()">
+  		<span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span> Add
+		</button>
+		
 		<table class="table table-hover">
 			<thead>
 				<tr>
 					<th style="text-align: center">Book Title</th>
-					<th style="text-align: center">Book Copies</th>
+					<th style="text-align: center">noOfCopies</th>
 					<th style="text-align: center">Save Change</th>
 				</tr>
 			</thead>

@@ -1,0 +1,45 @@
+<section data-ng-controller="checkOutCtrl">
+<div class="modal-header">
+	<h4 class="modal-title">Check Out Book</h4>
+</div>
+
+<div class="modal-body">
+	<div id="borowerList">
+	  	<h4>Select Borrower</h4>	
+				<select style="width: 150px" ng-model="selectedBorrower">
+					<option ng-repeat= "borrow in borrowers" value={{borrow.cardNo}}>{{borrow.name}}</option>
+		</select>
+	</div>
+	<div id="branchList">
+	  	<h4>Select Branch</h4>	
+				<select style="width: 150px" ng-model="selectedBranch" ng-change="changedValue(selectedBranch)">
+					<option ng-repeat= "branch in branches" value={{branch.branchId}}>{{branch.name}}</option>
+		</select>
+	</div>
+	<div id="bookList">
+	  	<h4>Select Book</h4>	
+		<table class="table table-hover">
+			<thead>
+				<tr>
+					<th style="text-align: center">Book Title</th>
+					<th style="text-align: center">noOfCopies</th>
+					<th style="text-align: center">Check Out</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr ng-repeat="copy in bookCopies">
+					<td align="center">{{copy.book.title}}</td>
+					<td align="center"><input value={{copy.noOfCopies}} ng-model=copy.noOfCopies
+						onkeypress='return event.charCode >= 48 && event.charCode <= 57' /></td>
+					<td align="center"><button type="button"
+							class="btn btn-primary"
+							href="javascript:;" ng-click="checkOut(copy);">Check out this book
+							</button></td>
+				</tr>
+			</tbody>
+		</table>		
+	</div>
+</div>
+
+
+</section>

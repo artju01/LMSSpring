@@ -83,19 +83,22 @@ public class BorrowerService {
 		//check if there is the same record on the db or not.  
 		//If yes, then update the data in DB
 		//If no,  insert a new record 
-		BookLoans loadData = bookLoansDAO.readOne(loan.getBook().getBookId(), loan.getBranch().getBranchId(), loan.getBorrower().getCardNo());
-		try {
-			if (loadData != null) {
-				bookLoansDAO.update(loan);
-			}
-			else {
-				bookLoansDAO.insert(loan);
-			}
-		}
-		catch (SQLException e) {
-			System.out.println(e);
-		}
 		
+		if (loan.getBook() != null && loan.getBranch() != null && loan.getBorrower() != null){
+			BookLoans loadData = bookLoansDAO.readOne(loan.getBook().getBookId(), loan.getBranch().getBranchId(), loan.getBorrower().getCardNo());
+			
+			try {
+				if (loadData != null) {
+					bookLoansDAO.update(loan);
+				}
+				else {
+					bookLoansDAO.insert(loan);
+				}
+			}
+			catch (SQLException e) {
+				System.out.println(e);
+			}
+		}
 	}
 	
 	@Transactional

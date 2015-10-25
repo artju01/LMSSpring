@@ -25,6 +25,7 @@ import com.gcit.jdbc.entity.Branch;
 import com.gcit.jdbc.entity.Genre;
 import com.gcit.jdbc.entity.Publisher;
 import com.gcit.jdbc.service.AdministratorService;
+import com.gcit.jdbc.service.BorrowerService;
 import com.gcit.jdbc.service.LibrarianService;
 
 /**
@@ -37,7 +38,8 @@ public class HomeController {
 	AdministratorService adminService;
 	@Autowired
 	LibrarianService libService;
-
+	@Autowired
+	BorrowerService borrowService;
 	private static final Logger logger = LoggerFactory
 			.getLogger(HomeController.class);
 
@@ -180,9 +182,17 @@ public class HomeController {
 	public List<Borrower> listBorrowers(
 			@PathVariable(value = "pageNo") Integer pageNo) {
 		try {
-			if (pageNo == null)
+			if (pageNo == null) {
 				pageNo = 1;
-			return adminService.getAllBorrower(pageNo);
+				return adminService.getAllBorrower(pageNo);
+			}
+			else if (pageNo == -1) {
+				return adminService.getAllBorrower();
+			}
+			else {
+				return adminService.getAllBorrower(pageNo);
+			}
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
@@ -258,9 +268,16 @@ public class HomeController {
 	public List<Branch> listBranches(
 			@PathVariable(value = "pageNo") Integer pageNo) {
 		try {
-			if (pageNo == null)
+			if (pageNo == null) {
 				pageNo = 1;
-			return adminService.getAllBranches(pageNo);
+				return adminService.getAllBranches(pageNo);
+			}
+			else if (pageNo == -1) {
+				return adminService.getAllBranches();
+			}
+			else {
+				return adminService.getAllBranches(pageNo);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
@@ -537,6 +554,42 @@ public class HomeController {
 		} catch (Exception e) {
 			e.printStackTrace();
 			return "BookCopy update failed. Reason: " + e.getMessage();
+		}
+	}
+	
+	@RequestMapping(value = "/addBookCopy", method = RequestMethod.POST, consumes = "application/json")
+	public String addBookCopy(@RequestBody BookCopies copy,
+			Locale locale, Model model) {
+		try {
+			libService.addBookCopies(copy);
+			return "BookCopy add succesfully";
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "BookCopy add failed. Reason: " + e.getMessage();
+		}
+	}
+	
+	//////////////////////for Borrower/////////////////////////////////
+	@RequestMapping(value = "/listBookLoansForBorrower", method = {
+			RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
+	public List<BookLoans> listBookLoansForBorrower(@RequestBody Borrower borrower) {
+		try {
+			return borrowService.getAllBookLoansByBorrower(borrower);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	@RequestMapping(value = "/addBookLoan", method = {
+			RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
+	public String addBookLoan(@RequestBody BookLoans bookloan) {
+		try {
+			borrowService.checkOutBook(bookloan);
+			return "CheckOut add succesfully";
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "CheckOut failed. Reason: " + e.getMessage();
 		}
 	}
 }

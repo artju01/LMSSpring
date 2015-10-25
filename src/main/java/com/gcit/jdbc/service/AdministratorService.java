@@ -279,6 +279,11 @@ public class AdministratorService {
 		return branches;
 	}
 	
+	public List<Branch> getAllBranches() throws SQLException {
+		List<Branch> branches = branchDAO.readAllNoLimit();
+		return branches;
+	}
+	
 	@Transactional
 	public void addBranch(Branch branch) throws SQLException {
 		try {
@@ -325,6 +330,11 @@ public class AdministratorService {
 		borrowDAO.setPageNo(pageNo);
 		List<Borrower> borrowers = borrowDAO.readAll();
 		
+		return borrowers;
+	}
+	
+	public List<Borrower> getAllBorrower() throws SQLException {
+		List<Borrower> borrowers = borrowDAO.readAllNoLimit();
 		return borrowers;
 	}
 	

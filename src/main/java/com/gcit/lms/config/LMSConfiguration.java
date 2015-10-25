@@ -17,6 +17,7 @@ import com.gcit.jdbc.dao.BranchDAO;
 import com.gcit.jdbc.dao.GenreDAO;
 import com.gcit.jdbc.dao.PublisherDAO;
 import com.gcit.jdbc.service.AdministratorService;
+import com.gcit.jdbc.service.BorrowerService;
 import com.gcit.jdbc.service.LibrarianService;
 
 @Configuration
@@ -31,6 +32,11 @@ public class LMSConfiguration {
 	@Bean
 	public LibrarianService librarian() {
 		return new LibrarianService();
+	}
+	
+	@Bean
+	public BorrowerService borrower() {
+		return new BorrowerService();
 	}
 
 	@Bean

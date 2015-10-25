@@ -51,6 +51,16 @@ public class LibrarianService {
 		}
 	}
 	
+	@Transactional
+	public void addBookCopies(BookCopies copy) {
+		try {
+			bookCopiesDAO.insert(copy);
+		}
+		catch (SQLException e) {
+			System.out.println(e);
+		}
+	}
+	
 	public List<BookCopies> getBookCopiesByBranch (int branchId) throws SQLException {
 		Branch br = new Branch();
 		br.setBranchId(branchId);

@@ -69,6 +69,11 @@ public class BorrowerDAO extends BaseDAO implements ResultSetExtractor<List<Borr
 		return template.query(setPageLimits("select * from tbl_borrower"), this);
 	}
 	
+	public List<Borrower> readAllNoLimit() throws SQLException {
+		return template.query("select * from tbl_borrower", this);
+	}
+	
+	
 	public List<Borrower> readByBook(Book bk) throws SQLException {
 		List<Borrower> read = template.query("select * from tbl_borrower where cardNo in (select cardNo from table_book_loans where bookId = ?)"
 				, new Object[] {bk.getBookId()}, this );

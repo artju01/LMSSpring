@@ -69,6 +69,11 @@ public class BranchDAO extends BaseDAO implements ResultSetExtractor<List<Branch
 		List<Branch> read = template.query(setPageLimits("select * from tbl_library_branch"), this);
 		return read;
 	}
+	
+	public List<Branch> readAllNoLimit() throws SQLException {
+		List<Branch> read = template.query("select * from tbl_library_branch", this);
+		return read;
+	}
 
 	public List<Branch> readAllByBook(Book bk) throws SQLException {
 		return template.query(
