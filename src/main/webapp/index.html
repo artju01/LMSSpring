@@ -37,6 +37,40 @@
 	src="http://code.angularjs.org/1.2.13/angular-route.js"></script>
 <script src="./scripts/app.js"></script>
 
+<!--.bar {
+	fill: steelblue;
+}-->
+<style>
+
+
+.bar:hover {
+	fill: brown;
+}
+
+.axis {
+	font: 10px sans-serif;
+}
+
+.axis path, .axis line {
+	fill: none;
+	stroke: #000;
+	shape-rendering: crispEdges;
+}
+
+.x.axis path {
+	display: none;
+}
+</style>
+
+<!--<style>
+div.bar {
+    display: inline-block;
+    width: 20px;
+    height: 75px;   
+    background-color: teal;
+}
+</style> -->
+
 </head>
 <!--/head-->
 
@@ -97,7 +131,7 @@
                                 <li><a href="#/returnBook">Return book</a></li>
                             </ul>
                         </li>                         
-                        <li><a href="shortcodes.html ">Shortcodes</a></li>                    
+                        <li><a href="#/visualization ">Visualization</a></li>                    
                     </ul>
                 </div>
                 <div class="search">
@@ -117,7 +151,7 @@
 		<section data-ng-view="" id="content" class="animate-fade-up"></section>
 	</div>
 
-
+	
 	<script src="./scripts/ui-bootstrap-tpls-0.12.1.min.js"></script>
     <script type="text/javascript" src="js/jquery.js"></script>
     <script type="text/javascript" src="js/bootstrap.min.js"></script>
@@ -126,31 +160,6 @@
     <script type="text/javascript" src="js/main.js"></script>  
 </body>
 
-<script>
-	function selectMove(id1, id2) {
-		var name;
-		var s1 = document.getElementById(id1);
-		var s2 = document.getElementById(id2);
-		
-		for (var i = s1.length-1; i >= 0; i-- )
-		{
-			if(s1[i].selected) {
-				s2.appendChild(s1[i]);
-			}
-		}
-	}
-	
-	function selectRemove(id1) {
-		var name;
-		var s1 = document.getElementById(id1);
-		
-		for (var i = s1.length-1; i >= 0; i-- )
-		{
-			if(s1[i].selected) {
-				s1.removeChild(s1[i]);
-			}
-		}
-	}
-</script>
+
 
 </html>

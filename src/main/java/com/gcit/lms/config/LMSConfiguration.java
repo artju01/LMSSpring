@@ -9,6 +9,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.gcit.jdbc.dao.AuthorDAO;
+import com.gcit.jdbc.dao.BookCopiesByBranchDAO;
 import com.gcit.jdbc.dao.BookDAO;
 import com.gcit.jdbc.dao.Book_CopiesDAO;
 import com.gcit.jdbc.dao.Book_LoansDAO;
@@ -76,6 +77,10 @@ public class LMSConfiguration {
 	
 	@Bean Book_LoansDAO bookLoansDAO() {
 		return new Book_LoansDAO(template());
+	}
+	
+	@Bean BookCopiesByBranchDAO bookCopiesByBranchDAO() {
+		return new BookCopiesByBranchDAO(template());
 	}
 	
 	@Bean

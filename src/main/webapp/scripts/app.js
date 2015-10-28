@@ -1,6 +1,33 @@
-var addAuthorModal,listAuthorsModal; 
 
-var lmsModule = angular.module('lmsApp', ['ngRoute', 'ui.bootstrap']);
+angular.module('d3', [])
+  .factory('d3Service', ['$document', '$q', '$rootScope',
+    function($document, $q, $rootScope) {
+      var d = $q.defer();
+      function onScriptLoad() {
+        // Load client in the browser
+        $rootScope.$apply(function() { d.resolve(window.d3); });
+      }
+      // Create a script tag with d3 as the source
+      // and call our onScriptLoad callback when it
+      // has been loaded
+      var scriptTag = $document[0].createElement('script');
+      scriptTag.type = 'text/javascript'; 
+      scriptTag.async = true;
+      scriptTag.src = 'http://d3js.org/d3.v3.min.js';
+      scriptTag.onreadystatechange = function () {
+        if (this.readyState == 'complete') onScriptLoad();
+      }
+      scriptTag.onload = onScriptLoad;
+
+      var s = $document[0].getElementsByTagName('body')[0];
+      s.appendChild(scriptTag);
+
+      return {
+        d3: function() { return d.promise; }
+      };
+}]);
+
+var lmsModule = angular.module('lmsApp', ['ngRoute', 'ui.bootstrap','d3']);
 
 lmsModule.filter('format', function () {
 	   return function (input) {
@@ -10,6 +37,153 @@ lmsModule.filter('format', function () {
 
 
 var currentPage = 1;
+
+lmsModule.directive('barChart', ['d3Service',"$window","$http", function(d3Service, $window, $http) {
+	return {
+		restrict: 'EA',
+		scope: {},
+		link: function(scope, element, attrs) {
+			d3Service.d3().then(function(d3) {
+				
+				var margin = {top: 20, right: 20, bottom: 30, left: 40},
+			    width = 960 - margin.left - margin.right,
+			    height = 500 - margin.top - margin.bottom;
+				
+				var svg = d3.select(element[0])
+				.append("svg")
+				.attr("width", width + margin.left + margin.right)
+				.attr("height", height + margin.top + margin.bottom)
+				.append("g")
+				.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+				.style('width', '100%');
+
+				// Browser onresize event
+				
+		          window.onresize = function() {
+		            scope.$apply();
+		          };
+
+		         
+		          // Watch for resize event
+		          scope.$watch(function() {
+		        	  return angular.element($window)[0].innerWidth;
+		          }, function() {
+		        	  var empty = [];
+		        	  scope.render(empty);	  
+		        	  $http.post("totalBookForAllBranch").
+			          success(function(data) {
+			        	  dataset = data;
+			        	
+			        	 scope.render(data);
+			          });
+		          });
+
+		          
+		      
+		          	          		      
+		          
+		          scope.render = function(data) {
+		        	  svg.selectAll('*').remove();
+		        	  /*var dataset = [
+		        	                 {
+		        	                	 name:"Art",
+		        	                	 noOfCopies:"80"
+		        	                 },
+		        	                 {
+		        	                	 name:"Js",
+		        	                	 noOfCopies:"10"
+		        	                 },
+		        	                 {
+		        	                	 name:"wdJs",
+		        	                	 noOfCopies:"30"
+		        	                 }			        	 
+		        	  ];*/
+		        			  
+		        	  
+		 
+		        	  barPadding = 10;
+		        	 
+
+		        	  var x = d3.scale.ordinal()
+		        	    .rangeRoundBands([0, width], .1);
+
+		        	  var y = d3.scale.linear()
+		        	    .range([height, 0]);
+
+		        	  var xAxis = d3.svg.axis()
+		        	    .scale(x)
+		        	    .orient("bottom");
+		        	  
+		        	  var yAxis = d3.svg.axis()
+		        	    .scale(y)
+		        	    .orient("left");
+		        	   // .ticks(10, "%");
+		        	  
+		        	  x.domain(data.map(function(d) { return d.branch.name; }));
+		        	  y.domain([0, d3.max(data, function(d) { return d.noOfCopies; })]);
+		        	  
+		        	  svg.append("g")
+		              .attr("class", "x axis")
+		              .attr("transform", "translate(0," + height + ")")
+		              .call(xAxis)
+		              
+		        	  
+		              svg.append("g")
+		              .attr("class", "y axis")		             
+		              .call(yAxis)
+		              .append("text")
+		              .attr("transform", "rotate(-90)")
+		              .attr("y", 6)
+		              .attr("dy", ".71em") 
+		              .style("text-anchor", "end")
+		              .text("Total Books");
+
+		        	  svg.selectAll("bar")
+		        	  .data(data)		        	   
+		        	  .enter()	    		        	  
+		        	  .append("rect")			        	 
+		        	  .attr("class", "bar")
+		        	  .attr("x", function(d, i) {
+		        		  return i * (width / data.length);  
+		        	  })
+		        	  .attr("y", function(d) {		        		  
+		        		  return height - (d.noOfCopies*5);          
+		        	  })		 		        	 
+		        	  .attr("height", function(d) {
+		        		  return d.noOfCopies*5;
+		        	  })		
+		        	  .transition()
+		        	  .duration(1000)
+		        	  .attr("width", width / data.length - barPadding)		        	 
+		        	  .attr("fill", function(d) {
+		        		    return "rgb("+(d.noOfCopies*4)+","+(d.noOfCopies*2)+", " + (d.noOfCopies*4) + ")";
+		        		});
+		        	  
+		        	  /*
+		        	  svg.selectAll("text")
+		        	  .data(data)
+		        	  .enter()
+		        	  .append("text")
+		        	  .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+		        	  .text(function(d) {
+		        		  return d;
+		        	  })
+		        	  .attr("x", function(d, i) {
+		        		  return i * (width / data.length) + (width / data.length - barPadding) / 2;
+		        	  })
+		        	  .attr("y", function(d) {
+		        		  return height - (d.noOfCopies * 5) + 14;  //15 is now 14
+		        	  })
+		        	  .attr("font-family", "sans-serif")
+		        	  .attr("font-size", "11px")
+		        	  .attr("fill", "black")
+		        	  .attr("text-anchor", "middle");*/
+
+		          }
+			});
+		}};
+}]);
+	
 
 lmsModule.directive('ngLmsSearchBox', ['$http', function($http) {
 	  return {
@@ -191,6 +365,8 @@ lmsModule.config([ "$routeProvider", function($routeProvider) {
 		templateUrl : "checkOutBook.html"
 	}).when("/returnBook", {
 		templateUrl : "returnBook.html"
+	}).when("/visualization", {
+		templateUrl : "visualization.html"
 	})
 } ]);
 
@@ -1512,4 +1688,12 @@ lmsModule.controller('returnCtrl', ["$scope", "$http", "$modal", "$rootScope",
 			$scope.changedValue(loan.borrower.cardNo);				
 		});
 	}
+}]);
+
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////Visualization////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+
+lmsModule.controller('visualizationCtrl', ["$scope", "$http", "$modal", function($scope, $http, $modal) {
+	
 }]);

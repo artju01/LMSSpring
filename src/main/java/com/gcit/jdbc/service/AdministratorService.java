@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.gcit.jdbc.dao.AuthorDAO;
+import com.gcit.jdbc.dao.BookCopiesByBranchDAO;
 import com.gcit.jdbc.dao.BookDAO;
 import com.gcit.jdbc.dao.Book_CopiesDAO;
 import com.gcit.jdbc.dao.Book_LoansDAO;
@@ -17,6 +18,8 @@ import com.gcit.jdbc.dao.GenreDAO;
 import com.gcit.jdbc.dao.PublisherDAO;
 import com.gcit.jdbc.entity.Author;
 import com.gcit.jdbc.entity.Book;
+import com.gcit.jdbc.entity.BookCopies;
+import com.gcit.jdbc.entity.BookCopiesByBranch;
 import com.gcit.jdbc.entity.BookLoans;
 import com.gcit.jdbc.entity.Borrower;
 import com.gcit.jdbc.entity.Branch;
@@ -42,6 +45,8 @@ public class AdministratorService {
 	Book_CopiesDAO bookCopiesDAO;
 	@Autowired
 	Book_LoansDAO bookLoansDAO;
+	@Autowired
+	BookCopiesByBranchDAO bookCopiesByBranchDAO;
 	
 	public List<Book> getAllBooks(int pageNo) throws SQLException {
 		if(pageNo <= 0)
@@ -425,4 +430,10 @@ public class AdministratorService {
 		List<Genre> gens = genreDAO.readAllByName(searchText);
 		return gens;
 	}
+	
+	public List<BookCopiesByBranch> getAllBookCopiesData( ) throws SQLException {
+		List<BookCopiesByBranch> copies = bookCopiesByBranchDAO.readAll();
+		return copies;
+	}
+	
 }

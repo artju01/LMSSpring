@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gcit.jdbc.entity.Author;
 import com.gcit.jdbc.entity.Book;
 import com.gcit.jdbc.entity.BookCopies;
+import com.gcit.jdbc.entity.BookCopiesByBranch;
 import com.gcit.jdbc.entity.BookLoans;
 import com.gcit.jdbc.entity.Borrower;
 import com.gcit.jdbc.entity.Branch;
@@ -616,4 +617,14 @@ public class HomeController {
 		}
 	}
 	
+	@RequestMapping(value = "/totalBookForAllBranch", method = {
+			RequestMethod.GET, RequestMethod.POST }, produces = "application/json")
+	public List<BookCopiesByBranch> totalBookForAllBranch() {
+		try {
+			return adminService.getAllBookCopiesData();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
 }
