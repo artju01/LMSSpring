@@ -18,4 +18,4 @@ Gold Coast IT Solutions LLC alone retains all control over Kritsakorn Chaumpanic
 
 
 Please confirm that I can mention the above.
-Kritsakorn Chaumpanich
+Kc
