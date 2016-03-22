@@ -19,3 +19,24 @@ Gold Coast IT Solutions LLC alone retains all control over Kritsakorn Chaumpanic
 
 Please confirm that I can mention the above.
 Kc
+
+
+Project: Application Shared Infrastructure
+Reporting Period: 03/01/2016 -03/18/2016
+Accomplishments
+During the period the following accomplishments were made: 
+•	Test some part of the application by using unit-testing. 
+•	Refactor some old code on the front-end of an application.
+•	Fix defects for an existing application.
+•	Add a new webpage to a website.
+•	Learn Swift with team members for Innovation Friday event.
+
+Planned activities for next status period 03/21/2016 – 03/31/2016
+The following activities/tasks are plan for next reporting period.
+•	Add more unit-testing to cover all functionalities
+•	Create sample applications.
+•	Fix major and minor defects for the project.
+
+Progress Summary
+For this period, I usually test the existing codes with unit-testing. The part of the code that I did unit-testing is a big part and it took more than 5-7 working days to complete that task. Also, I refactor some part of the existing application and make it maintainable and testable. Lastly, I fix minor defects for the application.
+
